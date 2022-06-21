@@ -1,0 +1,24 @@
+﻿@using Blazorise
+@using Blazorise.Components
+@using ProjectManager.Data
+
+@if (TaskState.SelectedProject != null)
+{
+    <Heading Size="HeadingSize.Is2">@TaskState.SelectedProject.ProjectId - @TaskState.SelectedProject.Name</Heading>
+
+    @foreach (ProjectTask projectTask in TaskState.SelectedProject.Tasks)
+    {
+        
+    }
+}
+
+@code {
+    [CascadingParameter]
+    public TaskStateMachine TaskState { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        TaskState.PropertyChanged += (e, arg) => StateHasChanged();
+        base.OnParametersSet();
+    }
+}

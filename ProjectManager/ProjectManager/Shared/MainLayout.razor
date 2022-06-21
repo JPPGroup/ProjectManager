@@ -1,0 +1,28 @@
+﻿@using ProjectManager.Data
+@inherits LayoutComponentBase
+@inject TaskStateMachine _stateMachine;
+@inject NavigationManager _navMan;
+
+<PageTitle>JPP Project Manager</PageTitle>
+
+<div class="page">
+    <!--<div class="sidebar">
+        <NavMenu />
+    </div>-->
+
+    <main>
+        <div class="top-row px-4 auth">
+            <LoginDisplay />            
+        </div>
+
+        <article class="content px-4">
+            <CascadingValue Value="@_stateMachine">
+            @Body
+            </CascadingValue>
+        </article>
+    </main>
+</div>
+
+@code {
+    
+}
