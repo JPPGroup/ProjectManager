@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CommonDataModels;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -8,7 +9,7 @@ namespace ProjectManager.Data.ProjectIntegration
 {
     public class ProjectService
     {
-        public event EventHandler ProjectListChanged;
+        public event EventHandler? ProjectListChanged;
 
         private readonly HttpClient client;
         private IList<ProjectResponse> projects;
@@ -24,6 +25,24 @@ namespace ProjectManager.Data.ProjectIntegration
             await ReloadProjects(firstname, lastname);
             return projects;
         }
+
+        public async Task<ProjectDetails?> GetProjectDetails(string projectcode)
+        {
+            using var message = GetProjectDetailsRequestMessage(projectcode);
+            var response = await client.SendAsync(message).ConfigureAwait(false);
+
+            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseCollection = JsonConvert.DeserializeObject<ProjectDetails>(result);
+                if (responseCollection != null)
+                    return responseCollection;
+            }
+
+            return null;
+        }
+
 
         private async Task ReloadProjects(string firstname, string lastname)
         {
@@ -47,6 +66,77 @@ namespace ProjectManager.Data.ProjectIntegration
 
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
+            if (response.IsSuccessStatusCode)
+            {
+                var responseCollection = JsonConvert.DeserializeObject<IList<ProjectResponse>>(result);
+                if (responseCollection != null)
+                    return responseCollection;
+            }
+
+            return new List<ProjectResponse>();            
+        }
+
+        public async IAsyncEnumerable<Invoice> GetUnpaidInvoices(string company)
+        {
+            Stream stream;
+
+            try
+            {
+                var builder = new UriBuilder
+                {
+                    Scheme = "http",
+                    Host = "services.cedarbarn.local",
+                    Port = 80,
+                    Path = "projects/api/invoices/overdue",
+                    Query = $"company={company}"
+                };
+
+                stream = await client.GetStreamAsync(builder.Uri);
+                
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+
+            /*TextReader reader = new StreamReader(stream);
+            string response = await reader.ReadToEndAsync();
+            var invoices = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<Invoice>>(response);*/
+
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                DefaultBufferSize = 25
+            };
+
+            await foreach (Invoice? i in System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<Invoice?>(stream, options))
+            {
+                if (i != null)
+                    yield return i;
+            }
+
+        }
+
+        public async Task<IList<ProjectResponse>> RequestListFromService(string company)
+        {
+             var builder = new UriBuilder
+             {
+                 Scheme = "http",
+                 Host = "services.cedarbarn.local",
+                 Port = 80,
+                 Path = "projects/api/projects",
+                 Query = $"company={company}"
+             }; 
+
+            using var message = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = builder.Uri,
+            };
+            var response = await this.client.SendAsync(message).ConfigureAwait(false);
+
+            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
             return response.IsSuccessStatusCode
                 ? JsonConvert.DeserializeObject<IList<ProjectResponse>>(result)
                 : new List<ProjectResponse>();
@@ -64,6 +154,24 @@ namespace ProjectManager.Data.ProjectIntegration
         private static HttpRequestMessage GetProjectRequestMessage(string firstname, string lastname)
         {
             var builder = GetUriBuilder("projects/api/projects/user", firstname, lastname);
+
+            return new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = builder.Uri,
+            };
+        }
+
+        private static HttpRequestMessage GetProjectDetailsRequestMessage(string projectcode)
+        {
+            var builder = new UriBuilder
+            {
+                Scheme = "http",
+                Host = "services.cedarbarn.local",
+                Port = 80,
+                Path = "projects/api/projectdetails",
+                Query = $"projectcode={projectcode}"
+            };
 
             return new HttpRequestMessage
             {

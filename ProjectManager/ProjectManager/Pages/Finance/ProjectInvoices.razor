@@ -1,0 +1,63 @@
+﻿@page "/finance/projectinvoices"
+@using CommonDataModels
+@using ProjectManager.Components
+@using ProjectManager.Data
+@using ProjectManager.Data.ProjectIntegration
+@using System.Collections.ObjectModel
+@using System.Collections.Concurrent
+@inject ProjectService _projects
+
+<h3>Unpaid Project Invoices</h3>
+
+<InvoiceList Loading="loading" Invoices="_orderedInvoices" />
+
+@code {
+    [CascadingParameter]
+    public TaskStateMachine? TaskState { get; set; }
+
+    private ConcurrentBag<Invoice> invoices;
+    private IEnumerable<Invoice> _orderedInvoices;
+    private bool loading = false;
+
+    protected override void OnInitialized()
+    {
+        invoices = new ConcurrentBag<Invoice>();
+        _orderedInvoices = new List<Invoice>();        
+        base.OnInitialized();
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        LoadUserInvoices();
+        base.OnParametersSetAsync();
+    }
+
+    private void UpdateInvoiceList()
+    {
+        _orderedInvoices = invoices.OrderBy(i => i.DueDate);
+        StateHasChanged();
+    }
+
+    private async Task LoadUserInvoices()
+    {
+        invoices.Clear();
+        await Parallel.ForEachAsync(TaskState.ProjectStates, async (p, token) =>
+        {
+            if (p.State != State.Ignored)
+            {
+                ProjectDetails pd = await _projects.GetProjectDetails(p.Project.ProjectId);
+                foreach (Invoice i in pd.Invoices)
+                {
+                    if (i.TotalUnpaid > 0)
+                    {                        
+                        invoices.Add(i);
+                    }
+                }
+            }
+        });
+
+        UpdateInvoiceList();
+    }
+}
+
+

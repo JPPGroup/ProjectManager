@@ -5,9 +5,9 @@ namespace ProjectManager.Data
 {
     public class ApplicationDbContext : IdentityDbContext<UserProfile>
     {
-        public DbSet<Project> Projects { get; set; }
-        public DbSet<ProjectStates> ProjectStates { get; set; }
-        public DbSet<ProjectTask> ProjectTasks { get; set; }
+        public DbSet<Project> Projects => Set<Project>();
+        public DbSet<ProjectStates> ProjectStates => Set<ProjectStates>();
+        public DbSet<ProjectTask> ProjectTasks => Set<ProjectTask>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

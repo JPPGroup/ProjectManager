@@ -12,12 +12,24 @@ namespace ProjectManager.Data
         IHttpContextAccessor _contextAccessor;
 
         UserProfile? _user;
+        SemaphoreSlim _userLock = new SemaphoreSlim(1);
 
         public IEnumerable<ProjectResponse> UnassignedProjects { get; set; }
         public IEnumerable<ProjectStates> ProjectStates { get; set; }
 
+        public IEnumerable<ProjectTask> UserTasks { get { return _userTasks; } }
+        //TODO: Change to observables to trigger regens
+        private List<ProjectTask> _userTasks;
+
+        public IEnumerable<ProjectTask> DailyUserTasks { get; private set; }
+        public IEnumerable<ProjectTask> WeeklyUserTasks { get; private set; }
+        public IEnumerable<ProjectTask> OtherUserTasks { get; private set; }
+
         [ObservableProperty]
-        Project _selectedProject;
+        Project? _selectedProject;
+
+        [ObservableProperty]
+        ProjectTask? _selectedTask;
 
         public TaskStateMachine(ProjectService projectService, ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
@@ -30,12 +42,46 @@ namespace ProjectManager.Data
 
             UnassignedProjects = new List<ProjectResponse>();
             ProjectStates = new List<ProjectStates>();
+            _userTasks = new List<ProjectTask>();
         }
 
-        public async Task<UserProfile> GetUser()
+        public async Task<UserProfile> GetUserAsync(bool nocache = false)
         {
-            string userName = _contextAccessor.HttpContext.User.Identity.Name;
-            return await _context.Users.FirstAsync(u => u.UserName == userName);
+            try
+            {                
+                await _userLock.WaitAsync();
+
+                if (_user != null && !nocache)
+                    return _user;
+
+                string? userName = _contextAccessor?.HttpContext?.User?.Identity?.Name;
+                if (userName == null)
+                    throw new InvalidOperationException("Username not found");
+
+                return await _context.Users.FirstAsync(u => u.UserName == userName);
+            } finally
+            {                
+                _userLock.Release();
+            }
+        }
+
+        public UserProfile GetUser(bool nocache = false)
+        {
+            try
+            {                
+                _userLock.Wait();
+                if (_user != null && !nocache)
+                    return _user;
+
+                string? userName = _contextAccessor?.HttpContext?.User?.Identity?.Name;
+                if (userName == null)
+                    throw new InvalidOperationException("Username not found");
+
+                return _context.Users.First(u => u.UserName == userName);
+            } finally
+            {                
+                _userLock.Release();
+            }
         }
 
         public async Task SyncProjects()
@@ -43,20 +89,44 @@ namespace ProjectManager.Data
             await _context.SaveChangesAsync();
 
             if (_user == null)
-                _user = await GetUser();
+                _user = await GetUserAsync();
 
             var results = await _projectService.GetProjects(_user.FirstName, _user.LastName);
             //Is this efficient?
             //TODO: Review exectuion
             var allStates = await _context.ProjectStates.Where(ps => ps.UserId == _user.Id).ToListAsync();
             ProjectStates = allStates.Where(ps => ps.State == State.Active);
+            await GenerateTaskList();
             //var unmatchedProjects = await _context.ProjectStates.Where(p => results.All(r => r.Code != p.Project.ProjectId)).ToListAsync();
 
-            UnassignedProjects = results.Where(r => ProjectStates.All(ps => r.Code != ps.Project.ProjectId && ps.State == State.Unknown)).ToList();
+            UnassignedProjects = results.Where(r => ProjectStates.All(ps => r.Code != ps.Project.ProjectId || ps.State == State.Unknown)).ToList();
+        }
+
+        private async Task GenerateTaskList()
+        {
+            if (_user == null)
+                _user = await GetUserAsync();
+
+            _userTasks.Clear();
+
+            //TODO: Switch to use project direct
+            foreach(ProjectStates ps in ProjectStates)
+            {
+                if(ps.State == State.Active)
+                    _userTasks.AddRange(ps.Project.Tasks);
+            }
+
+            _userTasks = _userTasks.Where(t => t.Status == ProjectTaskStatus.InProgress).OrderBy(t => t.Due).ToList();
+            DailyUserTasks = _userTasks.Where(t => t.DaysTillDue <= 1).OrderBy(t => t.Due).ToList();
+            WeeklyUserTasks = _userTasks.Where(t => { double x = t.DaysTillDue; return x > 1 && x <= 7; }).OrderBy(t => t.Due).ToList();
+            OtherUserTasks = _userTasks.Where(t => t.DaysTillDue > 7).OrderBy(t => t.Due).ToList();
         }
 
         public async Task AddProject(ProjectResponse response, bool sync = true)
         {
+            if (_user == null)
+                _user = await GetUserAsync();
+
             var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == response.Code);
             if (project == null)
                 project = createNewProject(response);
@@ -75,6 +145,9 @@ namespace ProjectManager.Data
 
         public async Task IgnoreProject(ProjectResponse response, bool sync = true)
         {
+            if (_user == null)
+                _user = await GetUserAsync();
+
             var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == response.Code);
             if (project == null)
                 project = createNewProject(response);
@@ -106,6 +179,9 @@ namespace ProjectManager.Data
 
         private ProjectStates createState(Project project)
         {
+            if (_user == null)
+                _user = GetUser();
+
             ProjectStates state = new ProjectStates()
             {
                 Id = Guid.NewGuid(),
@@ -116,6 +192,16 @@ namespace ProjectManager.Data
 
             _context.ProjectStates.Add(state);            
             return state;
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        public void DiscardChanges()
+        {
+            
         }
     }
 }

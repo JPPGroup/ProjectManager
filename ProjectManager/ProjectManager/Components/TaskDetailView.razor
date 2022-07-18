@@ -1,0 +1,115 @@
+﻿@using System.Text
+@using Blazorise
+@using ProjectManager.Data
+
+
+<div class="@Class" tabindex="-1" aria-labelledby="offcanvasRightLabel" style="visibility: @Style;width: 800px;">
+    @if (Task != null)
+    {
+
+        <Validations Mode="ValidationMode.Auto" Model="Task" @ref="_validations" StatusChanged="ValidationUpdated">
+            <div class="offcanvas-header">
+                <h5 id="offcanvasRightLabel">
+                    <Validation>
+                        <Field Horizontal>
+                            <FieldBody>
+                                <TextEdit Placeholder="New Task" @bind-Text="Task.Name">
+                                    <Feedback>
+                                        <ValidationError />
+                                    </Feedback>
+                                </TextEdit>
+                            </FieldBody>
+                        </Field>
+                    </Validation>
+                </h5>
+                <Button class="btn-close text-reset" aria-label="Close" Clicked="async () => await OnDiscardChanges.InvokeAsync()"></Button>
+            </div>
+            <div class="offcanvas-body">
+                <Validation>
+                    <Field Horizontal>
+                        <FieldLabel ColumnSize="ColumnSize.Is2">Due Date</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is10">
+                            <DateEdit TValue="DateTime" @bind-Date="Task.Due" />
+                            <ValidationError />
+                        </FieldBody>
+                    </Field>
+                </Validation>
+                <Validation>
+                    <Field Horizontal>
+                        <FieldLabel ColumnSize="ColumnSize.Is2">Estimated Hours</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is10">
+                            <NumericEdit TValue="int" @bind-Value="Task.EstimatedDuration" />
+                            <ValidationError />
+                        </FieldBody>
+                    </Field>
+                </Validation>
+
+                <Validation>
+                    <FieldLabel>Description</FieldLabel>
+                    <FieldBody>
+                        <MemoEdit Rows="5" @bind-Text="Task.Description" />
+                        <ValidationError />
+                    </FieldBody>
+                </Validation>
+
+                
+                    <FieldLabel>Assigned To</FieldLabel>
+                    <FieldBody>
+                        <UserSelector SelectedProfile="Task.AssignedUser"/>
+                        
+                    </FieldBody>
+                
+
+                <Field Class="align-items-end">
+                    <Button Color="Color.Primary" Disabled="!validated" Clicked="async () => await OnSaveChanges.InvokeAsync()">Save</Button>
+                    <Button Color="Color.Secondary" Clicked="async () => await OnDiscardChanges.InvokeAsync()">Cancel</Button>
+                </Field>
+            </div>
+        </Validations>
+    }
+</div>
+
+
+@code {
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public EventCallback OnSaveChanges { get; set; }
+
+    [Parameter]
+    public EventCallback OnDiscardChanges { get; set; }
+
+    [Parameter]
+    public ProjectTask? Task { get; set; }
+
+    Validations _validations;
+    bool validated = false;
+
+    private string Class
+    {
+        get
+        {
+            StringBuilder sb = new StringBuilder();
+            sb = sb.Append("offcanvas offcanvas-end");
+            if (Visible)
+                sb = sb.Append(" show");
+
+            return sb.ToString();
+        }
+    }
+
+    private string Style { get { return Visible ? "visible" : "hidden"; } }
+
+    public async Task ValidationUpdated(ValidationsStatusChangedEventArgs e)
+    {               
+        if(e.Status == ValidationStatus.Success)
+        {
+            validated = true;
+        } else
+        {
+            validated = false;
+        }
+
+    }
+}

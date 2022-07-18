@@ -1,0 +1,22 @@
+﻿@page "/finance/consultinginvoices"
+@using Blazorise
+@using CommonDataModels
+@using ProjectManager.Components
+@using ProjectManager.Data
+@using ProjectManager.Data.ProjectIntegration
+@using System.Collections.ObjectModel
+@using System.Collections.Concurrent
+@inherits BaseInvoicePage
+
+<h3>Unpaid Consulting Invoices</h3>
+
+<InvoiceList Loading="loading" Invoices="_orderedInvoices" />
+
+@code {
+    protected override string GetFilter()
+    {
+        return "consulting";
+    }    
+}
+
+

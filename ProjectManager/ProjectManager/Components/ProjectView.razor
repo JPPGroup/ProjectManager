@@ -2,23 +2,21 @@
 @using Blazorise.Components
 @using ProjectManager.Data
 
-@if (TaskState.SelectedProject != null)
+@if (TaskState != null && TaskState.SelectedProject != null)
 {
     <Heading Size="HeadingSize.Is2">@TaskState.SelectedProject.ProjectId - @TaskState.SelectedProject.Name</Heading>
+    <Accordion Class="accordion-flush">
+    
+    <TaskGroupView Name="General Tasks" Tasks="@TaskState.SelectedProject.Tasks" Expanded="true"></TaskGroupView>
 
-    @foreach (ProjectTask projectTask in TaskState.SelectedProject.Tasks)
-    {
-        
-    }
+    </Accordion>    
 }
 
 @code {
     [CascadingParameter]
-    public TaskStateMachine TaskState { get; set; }
+    public TaskStateMachine? TaskState { get; set; }
 
-    protected override void OnParametersSet()
-    {
-        TaskState.PropertyChanged += (e, arg) => StateHasChanged();
-        base.OnParametersSet();
-    }
+    
+
+    
 }

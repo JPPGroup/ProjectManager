@@ -1,0 +1,112 @@
+﻿@using Blazorise
+@using ProjectManager.Data
+@inject UINotifier _notifier;
+@inject TaskStateMachine _taskState;
+
+<div>
+    <Button class="task-container" Clicked="async () => await Clicked.InvokeAsync()">
+
+
+        <div class="container-fluid" style="background-color: @backgroundColor">
+            <div class="row align-items-start">
+                <div class="col">
+                    <Heading Size="HeadingSize.Is5">
+                        @Task.Name
+                        @if (ShowProject)
+                        {
+                            @($" ({Task.Project.Name})")
+                            ;
+                        }
+                    </Heading>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5">
+                    @Task.Description
+                </div>
+                <div class="col-md-5">
+                    @GetDateText()
+                </div>
+                <div class="col-md-2">
+                    <Button Clicked="Complete" Disabled="_complete" @onclick:stopPropagation="true">Complete <Icon Name="IconName.Check" /></Button>
+                </div>
+            </div>
+        </div>
+    </Button>
+</div>
+
+@code {
+    [Parameter]
+    public ProjectTask Task { get; set; }
+
+    [Parameter]
+    public EventCallback Clicked { get; set; }
+
+    [Parameter]
+    public bool ShowProject { get; set; } = false;
+
+    private bool _complete { get { return Task.Status == ProjectTaskStatus.Complete; } }
+
+    private string backgroundColor
+    {
+        get
+        {
+            switch (Task.Status)
+            {
+                case ProjectTaskStatus.Complete:
+                    return "#99ff33";
+
+                default:
+                    return "inherit";
+            }
+        }
+    }
+
+    public async Task Complete()
+    {
+        await _notifier.Notify(new MarkupString($"{Task.Name} marked complete!"), Blazorise.Snackbar.SnackbarColor.Success);
+        Task.Complete();
+        await _taskState.SaveChangesAsync();
+    }
+
+    public string GetDateText()
+    {
+        if (Task.DaysTillDue > 14)
+        {
+            return Task.Due.ToShortDateString();
+        }
+        else
+        {
+            if (Task.DaysTillDue > 7)
+            {
+
+                return $"Due in {Task.DaysTillDue} days";
+
+            }
+            else
+            {
+                if (Task.DaysTillDue < 0)
+                {
+                    return $"Overdue by {(int)Math.Abs(Task.DaysTillDue)} days";
+
+                }
+                else
+                {
+                    if (Task.DaysTillDue == 0)
+                    {
+
+                        return "Due Today";
+
+                    }
+                    else
+                    {
+                        return $"Due {Task.Due.DayOfWeek.ToString()}";
+
+                    }
+                }
+            }
+        }
+
+        return "Unknown date failure";
+    }
+}

@@ -32,6 +32,7 @@ namespace Company.WebApplication1
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             builder.Services.AddScoped<ProjectService>();
             builder.Services.AddScoped<TaskStateMachine>();
+            builder.Services.AddScoped<UINotifier>();
 
             builder.Services.AddBlazorise(options =>
     {

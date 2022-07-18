@@ -1,0 +1,9 @@
+﻿::deep .task-container {
+    width: 100%;    
+    border-top-style: solid;
+    border-bottom-style: solid;
+    border-left-style: hidden;
+    border-right-style: hidden;
+    border-color: lightgray;
+    margin: 0.1em;
+}

@@ -1,0 +1,115 @@
+﻿@page "/projects"
+@using Blazorise
+@using Blazorise.Components
+@using ProjectManager.Data
+@using ProjectManager.Data.ProjectIntegration
+@attribute [Authorize]
+@inject ProjectService _projects
+
+<PageTitle>Project Manager - Projects</PageTitle>
+
+@if (TaskState != null)
+{
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                @if (TaskState.UnassignedProjects.Count() > 0)
+                {
+                    <Heading Size="HeadingSize.Is2">
+                        New Projects
+                        <Badge Color="Color.Secondary" Pill Style="font-size:.5em;">@TaskState.UnassignedProjects.Count()</Badge>
+                        <Button Color="Color.Secondary" Pill Style="font-size:.3em;" Clicked="async () => await IgnoreAll()"><Icon Name="IconName.Times" aria-label="Clear All" /> Clear</Button>
+                    </Heading>
+                    <ListGroup Class="list-group-flush" Style="min-height:350px;max-height: 350px;overflow: auto">
+                        @foreach (ProjectResponse pr in TaskState.UnassignedProjects)
+                        {
+                            <ListGroupItem>
+                                <div class="d-flex">
+                                    <div class="flex-grow-1" style="flex-basis: 0">
+                                        @pr.Code - @pr.Name
+                                    </div>
+                                    <div>
+                                        <Button Color="Color.Secondary" Clicked="async () => { await TaskState.AddProject(pr); }"><Icon Name="IconName.Add" aria-label="Add" /> </Button>
+                                        <Button Color="Color.Secondary" Clicked="async () => { await TaskState.IgnoreProject(pr); }"><Icon Name="IconName.Times" aria-label="Ignore" /> </Button>
+                                    </div>
+                                </div>
+                            </ListGroupItem>
+                        }
+                    </ListGroup>
+                    <br />
+                }
+                <Heading Size="HeadingSize.Is2">
+                    My Projects
+                    <Badge Color="Color.Secondary" Pill Style="font-size:.5em;">@TaskState.ProjectStates.Count()</Badge>
+                </Heading>
+                <ListGroup Class="list-group-flush" Style="min-height:350px;max-height: 350px;overflow: auto" Mode="ListGroupMode.Selectable" @bind-SelectedItem="ProjectSelected">
+                    @foreach (ProjectStates ps in TaskState.ProjectStates)
+                    {
+                        <ListGroupItem Name="@ps.Id.ToString()">@ps.Project.ProjectId - @ps.Project.Name</ListGroupItem>
+                    }
+                </ListGroup>
+            </div>
+            <div class="col-md-8">
+                <ProjectManager.Components.ProjectView />
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <p>Task state failure</p>
+}
+
+@code {
+
+    [CascadingParameter]
+    public TaskStateMachine? TaskState { get; set; }
+
+    string ProjectSelected
+    {
+        get { return _projectSelected; }
+        set { _projectSelected = value; ProjectSelection(); }
+    }
+
+    string _projectSelected = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (TaskState == null)
+            throw new InvalidOperationException("Task state null");
+
+        await TaskState.SyncProjects();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task IgnoreAll()
+    {
+        if (TaskState == null)
+            throw new InvalidOperationException("Task state null");
+
+        foreach (ProjectResponse projectResponse in TaskState.UnassignedProjects)
+        {
+            await TaskState.IgnoreProject(projectResponse, false);
+        }
+        await TaskState.SyncProjects();
+        StateHasChanged();
+
+    }
+
+    private void ProjectSelection()
+    {
+        if (TaskState == null)
+            throw new InvalidOperationException("Task state null");
+
+        if (!String.IsNullOrEmpty(ProjectSelected))
+        {
+            var proj = TaskState.ProjectStates.FirstOrDefault(ps => ps.Id.ToString() == ProjectSelected);
+            if (proj != null)
+            {
+                TaskState.SelectedProject = proj.Project;
+                StateHasChanged();
+            }
+        }
+    }
+}

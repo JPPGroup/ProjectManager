@@ -1,0 +1,124 @@
+﻿@using Blazorise
+@using CommonDataModels
+@using ProjectManager.Data
+@using ProjectManager.Data.ProjectIntegration
+@using System.Collections.ObjectModel
+@using System.Collections.Concurrent
+<div>
+    @string.Format("{0:C}", Total) unpaid across @Invoices.Count() projects
+</div>
+<div>
+    @string.Format("{0:C}", OverdueTotal) overdue across @OverdueCount projects
+</div>
+
+<br/>
+@if (Loading)
+{
+    <Progress Value="100" Animated Striped />
+}
+<div class="container-fluid">
+     <div class="row" style="font-weight: bold;">
+            <div class="col-md-1">
+                Code
+            </div>
+            <div class="col-md-3">
+                Project Name
+            </div>
+            <div class="col-md-2">
+                Client
+            </div>
+            <div class="col-md-1">
+                Invoice Due
+            </div>
+            <div class="col-md-1">
+                Days Overdue
+            </div>
+            <div class="col-md-1">
+                Outstanding Amount
+            </div>
+            <div class="col-md-3">
+                Notes
+            </div>
+        </div>
+    @foreach (Invoice i in Invoices)
+    {
+        <div class="row">
+            <div class="col-md-1">
+                @i.ProjectCode
+            </div>
+            <div class="col-md-3">
+                @i.ProjectName
+            </div>
+            <div class="col-md-2">
+                @i.Client
+            </div>
+            <div class="col-md-1">
+                @i.DueDate.Value.ToString("d")
+            </div>
+            <div class="col-md-1" style="text-align: right;">
+                @((int)(DateTime.Now - i.DueDate).Value.TotalDays)
+            </div>
+            <div class="col-md-1" style="text-align: right;">
+                @string.Format("{0:C}", i.TotalUnpaid)
+            </div>
+            <div class="col-md-3">
+                @i.Notes
+                @i.InternalNotes
+                @i.FinanceNotes
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<Invoice> Invoices { get; set; }
+
+    [Parameter]
+    public bool Loading { get; set; }
+
+    public decimal Total
+    {
+        get
+        {
+            decimal total = 0;
+            foreach(Invoice i in Invoices)
+            {
+                total += i.TotalUnpaid.Value;
+            }
+            return total;
+        }
+    }
+
+    public decimal OverdueTotal
+    {
+        get
+        {
+            decimal total = 0;
+            foreach(Invoice i in Invoices)
+            {
+                if (((int)(DateTime.Now - i.DueDate).Value.TotalDays) > 0)
+                {
+                    total += i.TotalUnpaid.Value;
+                }
+            }
+            return total;
+        }
+    }
+
+    public int OverdueCount
+    {
+        get
+        {
+            int total = 0;
+            foreach(Invoice i in Invoices)
+            {
+                if (((int)(DateTime.Now - i.DueDate).Value.TotalDays) > 0)
+                {
+                    total++;
+                }
+            }
+        return total;
+        }
+    }
+}

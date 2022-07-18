@@ -1,7 +1,12 @@
-﻿@using ProjectManager.Data
+﻿@using ProjectManager.Components
+@using ProjectManager.Data
+@using Blazorise
+@using Blazorise.Components
+@using Blazorise.Snackbar
 @inherits LayoutComponentBase
 @inject TaskStateMachine _stateMachine;
 @inject NavigationManager _navMan;
+@inject UINotifier _notifier;
 
 <PageTitle>JPP Project Manager</PageTitle>
 
@@ -11,18 +16,103 @@
     </div>-->
 
     <main>
-        <div class="top-row px-4 auth">
-            <LoginDisplay />            
-        </div>
+
+        <Bar Breakpoint="Breakpoint.Desktop" Background="Background.Light" ThemeContrast="ThemeContrast.Light">
+            <BarBrand>
+                Project Manager
+            </BarBrand>
+            <BarToggler />
+            <BarMenu>
+                <BarStart>
+                    <BarItem>
+                        <BarLink To="">Summary</BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <BarLink To="projects">Projects</BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <BarLink To="workplan">Workplan</BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <BarDropdown>
+                            <BarDropdownToggle>Finance</BarDropdownToggle>
+                            <BarDropdownMenu>
+                                <BarDropdownItem To="finance/wip">Work In Progress</BarDropdownItem>                                
+                                <BarDropdownItem To="finance/projectinvoices">Project Invoices</BarDropdownItem>
+                                <BarDropdownDivider />
+                                <BarDropdownItem To="finance/consultinginvoices">Overdue Consulting Invoices</BarDropdownItem>
+                                <BarDropdownItem To="finance/sfinvoices">Overdue SF Invoices</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </BarDropdown>
+                    </BarItem>
+                </BarStart>
+                <BarEnd>
+                    <BarItem>
+                        <!-- top-row px-4 auth -->
+                        <div style="align-items: center; justify-content: flex-end; display: flex;">
+                            <LoginDisplay />
+                        </div>
+                    </BarItem>
+                </BarEnd>
+            </BarMenu>
+        </Bar>
+
+
 
         <article class="content px-4">
             <CascadingValue Value="@_stateMachine">
-            @Body
+                @Body
+                <!--TODO: Review why backdrop isnt working-->
+                <TaskDetailView Visible="taskDetailVisible" OnSaveChanges="SaveChanges" OnDiscardChanges="DiscardChanges" Task="_stateMachine.SelectedTask" />
             </CascadingValue>
+            <SnackbarStack @ref="snackbarStack" Location="SnackbarStackLocation.Center" />
         </article>
     </main>
 </div>
 
 @code {
-    
+    private bool taskDetailVisible = false;
+    SnackbarStack snackbarStack;
+
+    protected override void OnParametersSet()
+    {
+        if (_stateMachine == null)
+            throw new InvalidOperationException("TaskState not cascaded to project view");
+
+        _stateMachine.PropertyChanged += (e, arg) =>
+        {
+            if (arg.PropertyName == nameof(TaskStateMachine.SelectedTask))
+            {
+                taskDetailVisible = true;
+            }
+            StateHasChanged();
+        };
+        base.OnParametersSet();
+    }
+
+    private async Task SaveChanges()
+    {
+        if (_stateMachine.SelectedTask.ProjectId == Guid.Empty)
+        {
+            _stateMachine.SelectedProject.Tasks.Add(_stateMachine.SelectedTask);
+        }
+        await _stateMachine.SaveChangesAsync();
+        taskDetailVisible = false;
+        await _stateMachine.SyncProjects();
+    }
+
+    private async Task DiscardChanges()
+    {
+        _stateMachine.SelectedTask = null;
+        taskDetailVisible = false;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _notifier.SetTarget(snackbarStack);
+        }
+        base.OnAfterRender(firstRender);
+    }
 }

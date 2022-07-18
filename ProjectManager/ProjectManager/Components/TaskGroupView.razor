@@ -1,0 +1,62 @@
+﻿@using ProjectManager.Data
+@using Blazorise
+
+<Collapse Visible="@Expanded">
+    <CollapseHeader>        
+            <Button Clicked="() => Expanded = !Expanded" Style="background-color:inherit;">
+                <Heading Size="HeadingSize.Is3">@Name</Heading>
+            </Button>
+        
+    </CollapseHeader>
+    <CollapseBody>
+        @if (Tasks.Any())
+        {
+            @foreach (ProjectTask projectTask in Tasks)
+            {
+                <TaskView Task="projectTask" Clicked="() => TaskState.SelectedTask = projectTask" ShowProject="MultipleProjects"/>
+            }
+
+        } else
+        {
+            <p>No Tasks!</p>
+        }
+        @if(AllowNew)
+        {
+            <div class="container-fluid">
+        <Button Style="display:block;width:100%;height:80px;border-style:solid;border-color:gray;margin:10px;" Clicked="NewTask"><Icon Name="IconName.Add" /></Button>
+        </div>
+        }
+    </CollapseBody>
+</Collapse>
+
+@code {
+    [Parameter]
+    public IEnumerable<ProjectTask>? Tasks { get; set; }
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public bool Expanded { get; set; }
+
+    [Parameter]
+    public bool AllowNew { get; set; } = true;
+
+    [Parameter]
+    public bool MultipleProjects { get; set; } = false;
+
+    [CascadingParameter]
+    public TaskStateMachine TaskState { get; set; }
+
+    private async Task NewTask()
+    {
+        ProjectTask task = new ProjectTask()
+            {
+                Project = TaskState.SelectedProject,
+                Due = DateTime.Now,
+                CreatedUser = await TaskState.GetUserAsync()
+            };
+
+        TaskState.SelectedTask = task;
+    }
+}
