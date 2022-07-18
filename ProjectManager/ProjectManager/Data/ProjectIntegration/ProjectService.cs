@@ -8,7 +8,7 @@ namespace ProjectManager.Data.ProjectIntegration
 {
     public class ProjectService
     {
-        public event EventHandler ProjectListChanged;
+        public event EventHandler? ProjectListChanged;
 
         private readonly HttpClient client;
         private IList<ProjectResponse> projects;
@@ -47,9 +47,14 @@ namespace ProjectManager.Data.ProjectIntegration
 
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            return response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<IList<ProjectResponse>>(result)
-                : new List<ProjectResponse>();
+            if (response.IsSuccessStatusCode)
+            {
+                var responseCollection = JsonConvert.DeserializeObject<IList<ProjectResponse>>(result);
+                if (responseCollection != null)
+                    return responseCollection;
+            }
+
+            return new List<ProjectResponse>();            
         }
 
         private static HttpClient CreateHttpClient()

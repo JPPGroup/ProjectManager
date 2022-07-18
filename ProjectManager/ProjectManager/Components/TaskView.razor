@@ -1,0 +1,40 @@
+﻿@using Blazorise
+@using ProjectManager.Data
+
+<div>
+<Button class="task-container" Clicked="async () => await Clicked.InvokeAsync()">
+                <div class="container-fluid">
+                    <div class="row align-items-start">
+                        <div class="col">
+                            <Heading Size="HeadingSize.Is5">
+                            @Task.Name
+                            @if(ShowProject)
+                    {
+                        @($" ({Task.Project.Name})");
+                    }
+                </Heading>
+                        </div>
+                    </div>
+                    <div class="row">                        
+                        <div class="col">
+                            @Task.Description
+                        </div>
+                        <div class="col">
+                            @Task.Due.ToShortDateString()
+                        </div>
+                    </div>
+                </div>
+            </Button>
+            </div>
+
+@code {
+    [Parameter]
+    public ProjectTask Task { get; set; }
+
+    [Parameter]
+    public EventCallback Clicked { get; set; }
+
+    [Parameter]
+    public bool ShowProject { get; set; } = false;
+
+}

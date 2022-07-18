@@ -1,0 +1,138 @@
+﻿@page "/workplan"
+@using Blazorise
+@using Blazorise.Components
+@using ProjectManager.Data
+@using ProjectManager.Data.ProjectIntegration
+@using System.Globalization
+@attribute [Authorize]
+@inject ProjectService _projects
+
+<PageTitle>Project Manager</PageTitle>
+
+@if (TaskState != null && _user != null)
+{
+    <div class="main-container">
+        
+
+    <div class="plan-container">
+        
+        <!--Spacer-->
+        <div class="fixed-left" style="grid-column-start:1;grid-column-end:1;grid-row-start:1;grid-row-end:3;"></div>
+
+        <!--Render Users-->
+        <div class="fixed-left" style="grid-column-start:1;grid-column-end:1;grid-row-start:3;grid-row-end:3;">
+                Unassigned              
+            </div>
+            <div class="fixed-left" style="grid-column-start:1;grid-column-end:1;grid-row-start:4;grid-row-end:4;white-space: nowrap;">
+                
+                    @TaskState.GetUser().FirstName @TaskState.GetUser().LastName                 
+                
+            </div>
+            @foreach (ProjectTask task in TaskState.UserTasks)
+            {
+                int start = CalculateStart(task);
+                int end = CalculateEnd(task);
+                <div class="task-bullet" style="">
+                    @task.Name
+                    </div>
+            }
+
+        <!--Render Months-->
+        @{
+            int columnCount = 1;
+            for (int i = -MonthsBehind; i < 1 + MonthsAhead; i++)
+            {
+                int month = DateTime.Now.AddMonths(i).Month;
+
+                int days = DateTime.DaysInMonth(DateTime.Now.Year, month);
+                string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+                
+
+                <div style="grid-column-start:@(columnCount + 1);grid-column-end:@(columnCount + days + 1);grid-row-start:1;grid-row-end:1;">@monthName</div>
+                for (int j = 1; j <= days; j++)
+                {
+                    <div style="grid-column-start:@(columnCount+j);grid-column-end:@(columnCount+j);grid-row-start:2;grid-row-end:2;width:30px">@j</div>
+                }
+                columnCount = columnCount + days;
+            }
+        }
+    </div>
+    </div>
+
+    <Heading Size="HeadingSize.Is3">My Undated Tasks</Heading>
+}
+else
+{
+    <p>Task state failure</p>
+}
+
+@code {
+    [Parameter]
+    public int MonthsAhead { get; set; } = 2;
+
+    [Parameter]
+    public int MonthsBehind { get; set; } = 1;
+
+    [CascadingParameter]
+    public TaskStateMachine? TaskState { get; set; }
+    public UserProfile _user;
+
+    string ProjectSelected
+    {
+        get { return _projectSelected; }
+        set { _projectSelected = value; ProjectSelection(); }
+    }
+
+    string _projectSelected = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (TaskState == null)
+            throw new InvalidOperationException("Task state null");
+
+        await TaskState.SyncProjects();
+        _user = await TaskState.GetUserAsync();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task IgnoreAll()
+    {
+        if (TaskState == null)
+            throw new InvalidOperationException("Task state null");
+
+        foreach (ProjectResponse projectResponse in TaskState.UnassignedProjects)
+        {
+            await TaskState.IgnoreProject(projectResponse, false);
+        }
+        await TaskState.SyncProjects();
+        StateHasChanged();
+
+    }
+
+    private void ProjectSelection()
+    {
+        if (TaskState == null)
+            throw new InvalidOperationException("Task state null");
+
+        if (!String.IsNullOrEmpty(ProjectSelected))
+        {
+            var proj = TaskState.ProjectStates.FirstOrDefault(ps => ps.Id.ToString() == ProjectSelected);
+            if (proj != null)
+            {
+                TaskState.SelectedProject = proj.Project;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private int CalculateStart(ProjectTask task)
+    {
+        return 0;
+    }
+
+    private int CalculateEnd(ProjectTask task)
+    {
+        return 0;
+    }
+}

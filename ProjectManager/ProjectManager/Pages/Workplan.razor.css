@@ -1,0 +1,32 @@
+﻿.plan-container {
+    display: grid;
+    grid-auto-columns: auto;
+    grid-auto-rows: minmax(25px, auto);
+    overflow-x: scroll;
+}
+
+.user-container {
+    display: grid;    
+    grid-auto-columns: minmax(30px, auto);
+    grid-auto-rows: minmax(25px, auto);    
+}
+
+.main-container {    
+    max-width: 95vw;
+}
+
+.fixed-left {
+    position: sticky;
+    left: 0;
+    background-color: white;
+}
+
+.fixed-top {
+    position: sticky;
+    top: 0;
+    background-color: white;
+}
+
+.task-bullet {
+    background-color: red;
+}

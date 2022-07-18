@@ -1,0 +1,29 @@
+﻿@using Blazorise.Components;
+@using ProjectManager.Data;
+@inject ApplicationDbContext _context;
+
+<Autocomplete TItem="UserProfile"
+              TValue="UserProfile"
+              Data="Users"
+              TextField="@(( item ) => $"{item.FirstName} {item.LastName}")"
+              ValueField="@(( item ) => item)"
+              Placeholder="Search..."              
+              FreeTyping
+              @bind-SelectedValue="SelectedProfile"
+              @bind-SelectedText="multipleSelectionTexts">
+</Autocomplete>
+
+@code {
+    public IEnumerable<UserProfile> Users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users =  _context.Users.ToList();
+        await base.OnInitializedAsync();
+    }
+
+    [Parameter]
+    public UserProfile SelectedProfile { get; set; }
+
+    string multipleSelectionTexts;
+}
