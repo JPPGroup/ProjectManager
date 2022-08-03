@@ -1,0 +1,9 @@
+projectmanager:
+  imageVersion: 0.1.0  
+
+postgresql:
+  auth:
+    username: aspnetuser
+    password: Wh97G@3!pCeA
+    database: aspnet-ProjectManager
+  

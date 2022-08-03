@@ -10,7 +10,7 @@ WORKDIR /src
 COPY ["ProjectManager/ProjectManager.csproj", "ProjectManager/"]
 RUN dotnet restore "ProjectManager/ProjectManager.csproj"
 COPY . .
-WORKDIR "/src/ProjectManager"
+WORKDIR "/ProjectManager/ProjectManager"
 RUN dotnet build "ProjectManager.csproj" -c Release -o /app/build
 
 FROM build AS publish
