@@ -23,14 +23,19 @@ namespace Company.WebApplication1
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                if (builder.Environment.IsProduction())
+#if DEBUG
+                options.UseSqlServer(connectionString);
+#else
+                options.UseNpgsql(connectionString);
+#endif
+                /*if (builder.Environment.IsProduction())
                 {
                     options.UseNpgsql(connectionString);
                 }
                 else
                 {
                     options.UseSqlServer(connectionString);
-                }
+                }*/
                 });
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             builder.Services.AddDefaultIdentity<UserProfile>(options => options.SignIn.RequireConfirmedAccount = true)

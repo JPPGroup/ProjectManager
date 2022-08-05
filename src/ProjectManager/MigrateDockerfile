@@ -11,12 +11,15 @@ COPY ["ProjectManager/ProjectManager.csproj", "ProjectManager/"]
 RUN dotnet restore "ProjectManager/ProjectManager.csproj"
 COPY . .
 WORKDIR "/src/ProjectManager"
-RUN dotnet build "ProjectManager.csproj" -c Release -o /app/build
+RUN dotnet new tool-manifest
+RUN dotnet tool install dotnet-ef
 
 FROM build AS publish
-RUN dotnet publish "ProjectManager.csproj" -c Release -o /app/publish
+RUN dotnet ef migrations bundle --self-contained -r linux-x64 --configuration Release
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ProjectManager.dll"]
+COPY --from=publish /src/ProjectManager/efbundle .
+COPY --from=publish /src/ProjectManager/appsettings.json .
+COPY --from=publish /src/ProjectManager/appsettings.Production.json .
+ENTRYPOINT ["efbundle"]
