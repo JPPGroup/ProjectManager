@@ -16,7 +16,7 @@ spec:
       restartPolicy: Never    
       containers:
       - name: projectmanagermigration     
-        image: ghcr.io/jppgroup/projectmanager:{{ .Values.projectmanager.imageVersion }}
+        image: ghcr.io/jppgroup/projectmanagermigration:{{ .Values.projectmanager.imageVersion }}
         args: ["run"]        
         env:
         - name: ASPNETCORE_ConnectionStrings__DefaultConnection
