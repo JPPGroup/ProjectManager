@@ -23,10 +23,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.6" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Services\src\CommonDataModels\CommonDataModels.csproj" />
+    <ProjectReference Include="..\submodules\ServicesClient\src\CommonDataModels\CommonDataModels.csproj" />
   </ItemGroup>
 
 </Project>

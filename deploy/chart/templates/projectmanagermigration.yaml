@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-projectmanagermigrationjob
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:  
+  template:
+    metadata:
+      name: {{ .Release.Name }}-projectmanagermigration      
+    spec:
+      restartPolicy: Never    
+      containers:
+      - name: projectmanagermigration     
+        image: ghcr.io/jppgroup/projectmanager:{{ .Values.projectmanager.imageVersion }}
+        args: ["run"]        
+        env:
+        - name: ASPNETCORE_ConnectionStrings__DefaultConnection
+          value: "Host=projectmanager-postgresql;Database=aspnet-ProjectManager;Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"
