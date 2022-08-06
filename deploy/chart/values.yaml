@@ -1,9 +1,11 @@
 projectmanager:
-  imageVersion: 0.1.0  
+  imageVersion: 0.1.1  
 
-postgresql:
-  auth:
-    username: aspnetuser
-    password: Wh97G@3!pCeA
-    database: aspnet-ProjectManager
+global:
+  postgresql:
+    auth:
+      postgresPassword: Is92n$8&z^EI
+      username: aspnetuser
+      password: Wh97G@3!pCeA
+      database: aspnet-ProjectManager
   
