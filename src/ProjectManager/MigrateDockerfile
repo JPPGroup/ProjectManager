@@ -22,4 +22,4 @@ WORKDIR /app
 COPY --from=publish /src/ProjectManager/efbundle .
 COPY --from=publish /src/ProjectManager/appsettings.json .
 COPY --from=publish /src/ProjectManager/appsettings.Production.json .
-ENTRYPOINT ["efbundle"]
+ENTRYPOINT ["/app/efbundle"]
