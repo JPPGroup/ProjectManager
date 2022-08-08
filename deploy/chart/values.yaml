@@ -1,11 +1,12 @@
 projectmanager:
   imageVersion: 0.1.1  
+  databaseaddress: "localhost"
+  
 
 global:
   postgresql:
-    auth:
-      postgresPassword: Is92n$8&z^EI
-      username: aspnetuser
-      password: Wh97G@3!pCeA
+    auth:      
+      username: aspnetuser      
       database: aspnet-ProjectManager
+      password: ""
   

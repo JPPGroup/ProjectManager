@@ -20,4 +20,4 @@ spec:
         args: ["run"]        
         env:
         - name: ASPNETCORE_ConnectionStrings__DefaultConnection
-          value: "Host=projectmanager-postgresql;Database=aspnet-ProjectManager;Username={{ .Values.global.postgresql.auth.username }};Password={{ .Values.global.postgresql.auth.password }}"
+          value: "Host={{ .Values.projectmanager.databaseaddress }};Database={{ .Values.global.postgresql.auth.database }};Username={{ .Values.global.postgresql.auth.username }};Password={{ .Values.global.postgresql.auth.password }}"
