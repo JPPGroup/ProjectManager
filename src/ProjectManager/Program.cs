@@ -26,7 +26,8 @@ namespace Company.WebApplication1
 #if DEBUG
                 options.UseSqlServer(connectionString);
 #else
-                options.UseNpgsql(connectionString);
+                options.UseNpgsql(connectionString, x => x.MigrationsAssembly("PostgresqlMigrations"));                                
+                //options.UseNpgsql(connectionString);
 #endif
                 /*if (builder.Environment.IsProduction())
                 {
@@ -36,7 +37,7 @@ namespace Company.WebApplication1
                 {
                     options.UseSqlServer(connectionString);
                 }*/
-                });
+            });
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             builder.Services.AddDefaultIdentity<UserProfile>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();

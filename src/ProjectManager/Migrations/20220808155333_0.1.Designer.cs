@@ -12,8 +12,8 @@ using ProjectManager.Data;
 namespace ProjectManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220628141720_Initial")]
-    partial class Initial
+    [Migration("20220808155333_0.1")]
+    partial class _01
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -213,6 +213,9 @@ namespace ProjectManager.Migrations
 
                     b.Property<string>("AssignedUserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Completed")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedUserId")
                         .IsRequired()
