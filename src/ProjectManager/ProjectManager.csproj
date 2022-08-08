@@ -27,6 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PostgresqlMigrations\PostgresqlMigrations.csproj" />
+    <ProjectReference Include="..\ProjectManagerContext\ProjectManagerContext.csproj" />
     <ProjectReference Include="..\submodules\ServicesClient\src\CommonDataModels\CommonDataModels.csproj" />
   </ItemGroup>
 

@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonDataModels", "submodu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostgresqlMigrations", "PostgresqlMigrations\PostgresqlMigrations.csproj", "{00115654-252A-49B5-BCB0-54B249E4FD6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagerContext", "ProjectManagerContext\ProjectManagerContext.csproj", "{6F2971A3-0241-42FA-95D1-36CCAD17F0DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{00115654-252A-49B5-BCB0-54B249E4FD6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00115654-252A-49B5-BCB0-54B249E4FD6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00115654-252A-49B5-BCB0-54B249E4FD6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F2971A3-0241-42FA-95D1-36CCAD17F0DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F2971A3-0241-42FA-95D1-36CCAD17F0DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F2971A3-0241-42FA-95D1-36CCAD17F0DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F2971A3-0241-42FA-95D1-36CCAD17F0DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
