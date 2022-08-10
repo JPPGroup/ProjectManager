@@ -1,6 +1,7 @@
 projectmanager:
-  imageVersion: 0.1.1  
+  imageVersion: 0.1.4  
   databaseaddress: "localhost"
+  prefix: "/projectmanager"
   
 
 global:

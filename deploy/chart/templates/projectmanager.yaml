@@ -21,6 +21,8 @@ spec:
         env:
         - name: ASPNETCORE_ConnectionStrings__DefaultConnection
           value: "Host={{ .Values.projectmanager.databaseaddress }};Database={{ .Values.global.postgresql.auth.database }};Username={{ .Values.global.postgresql.auth.username }};Password={{ .Values.global.postgresql.auth.password }}"
+        - name: ASPNETCORE_PathBase
+          value: "{{ .Values.projectmanager.prefix }}"
 ---
 apiVersion: v1
 kind: Service
@@ -44,21 +46,10 @@ spec:
     - web
   routes:
     - kind: Rule
-      match: PathPrefix(`/projectmanager/`)  
-      middlewares:                    
-      - name: {{ .Release.Name }}-projectmanager-ingress-prefixstrip   
+      match: PathPrefix(`{{ .Values.projectmanager.prefix }}/`)        
       services:
         - kind: Service
-          name: projectmanager
+          name: {{ .Release.Name }}-projectmanager
           namespace: default
           port: 80
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: {{ .Release.Name }}-projectmanager-ingress-prefixstrip 
-spec:
-  stripPrefix:
-    prefixes:
-      - /projectmanager/   
           

@@ -86,11 +86,15 @@ namespace Company.WebApplication1
 
             app.UseStaticFiles();
 
-            app.UseRouting();
+            string? pathBase = builder.Configuration.GetValue<string?>("PathBase");
+            if (!string.IsNullOrEmpty(pathBase))
+            {
+                app.UsePathBase(pathBase);
+            }
 
+            app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapControllers();
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
