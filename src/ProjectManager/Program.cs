@@ -83,15 +83,16 @@ namespace Company.WebApplication1
             }
 
             app.UseHttpsRedirection();
-
-            app.UseStaticFiles();
-
+            
             string? pathBase = builder.Configuration.GetValue<string?>("PathBase");
             if (!string.IsNullOrEmpty(pathBase))
             {
                 app.UsePathBase(pathBase);
-            }
+            }        
 
+            app.UsePathBase(pathBase);
+
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
