@@ -24,21 +24,31 @@
             <BarToggler />
             <BarMenu>
                 <BarStart>
-                    <BarItem>
-                        <BarLink To="">Summary</BarLink>
-                    </BarItem>
-                    <BarItem>
-                        <BarLink To="projects">Projects</BarLink>
-                    </BarItem>
-                    <BarItem>
-                        <BarLink To="workplan">Workplan</BarLink>
-                    </BarItem>
+                    <AuthorizeView>
+                        <Authorized>
+                            <BarItem>
+                                <BarLink To="">Summary</BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="projects">Projects</BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="workplan">Workplan</BarLink>
+                            </BarItem>
+                        </Authorized>
+                    </AuthorizeView>
+
                     <BarItem>
                         <BarDropdown>
                             <BarDropdownToggle>Finance</BarDropdownToggle>
                             <BarDropdownMenu>
-                                <BarDropdownItem To="finance/wip">Work In Progress</BarDropdownItem>                                
-                                <BarDropdownItem To="finance/projectinvoices">Project Invoices</BarDropdownItem>
+                                <AuthorizeView>
+                                    <Authorized>
+                                        <BarDropdownItem To="finance/wip">Work In Progress</BarDropdownItem>
+                                        <BarDropdownItem To="finance/projectinvoices">Project Invoices</BarDropdownItem>
+                                    </Authorized>
+                                </AuthorizeView>
+
                                 <BarDropdownDivider />
                                 <BarDropdownItem To="finance/consultinginvoices">Overdue Consulting Invoices</BarDropdownItem>
                                 <BarDropdownItem To="finance/sfinvoices">Overdue SF Invoices</BarDropdownItem>

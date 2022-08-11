@@ -3,11 +3,12 @@
 @using Blazorise.Components
 @using ProjectManager.Data
 @using ProjectManager.Data.ProjectIntegration
-@attribute [Authorize]
 @inject ProjectService _projects
 
 <PageTitle>Project Manager</PageTitle>
 
+<AuthorizeView>
+                                    <Authorized>
 @if (TaskState != null && _user != null)
 {
     <div class="container-fluid">
@@ -31,12 +32,22 @@ else
 {
     <p>Task state failure</p>
 }
+</Authorized>
+<NotAuthorized>
+      <Heading Size="HeadingSize.Is2">
+                    Welcome!
+                </Heading>
+</NotAuthorized>
+</AuthorizeView>
 
 @code {
 
     [CascadingParameter]
     public TaskStateMachine? TaskState { get; set; }
     public UserProfile _user;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
 
     string ProjectSelected
     {
@@ -48,12 +59,15 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (TaskState == null)
-            throw new InvalidOperationException("Task state null");
+        var authState = await authenticationStateTask;
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            if (TaskState == null)
+                throw new InvalidOperationException("Task state null");
 
-        await TaskState.SyncProjects();
-        _user = await TaskState.GetUserAsync();
-
+            await TaskState.SyncProjects();
+            _user = await TaskState.GetUserAsync();
+        }
         await base.OnInitializedAsync();
     }
 
