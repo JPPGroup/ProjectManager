@@ -1,0 +1,42 @@
+﻿@using Blazorise
+@using Blazorise.Components
+@using System.Globalization
+
+<Heading Size="HeadingSize.Is2">Invoices By Month</Heading>
+
+<Tabs RenderMode="TabsRenderMode.LazyLoad" SelectedTab="@selectedTab">
+    <Items>
+        @for (int i = 0; i < 12; i++)
+        {
+            DateTime target = DateTime.Now.AddMonths(-i);
+            string name = target.ToString("MMM yy");
+
+            <Tab Name="@name">@name</Tab>
+        }
+    </Items>
+    <Content>
+        @for (int i = 0; i < 24; i++)
+        {
+            DateTime target = DateTime.Now.AddMonths(-i);
+            string name = target.ToString("MMM yy");
+
+            <TabPanel Name="@name">
+                <MonthlyInvoicing TargetMonth="@target" Company="@Company"/>
+            </TabPanel>
+        }
+    </Content>
+</Tabs>
+
+@code {
+    string selectedTab;
+
+    [Parameter]
+    public string Company { get; set; }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {              
+        selectedTab = DateTime.Now.ToString("MMM yy");
+        return base.SetParametersAsync(parameters);
+    }
+
+}

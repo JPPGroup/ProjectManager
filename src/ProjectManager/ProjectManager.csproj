@@ -32,4 +32,12 @@
     <ProjectReference Include="..\submodules\ServicesClient\src\CommonDataModels\CommonDataModels.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\MonthlyInvoicing.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Components\MonthlyInvoicing.razor" />
+  </ItemGroup>
+
 </Project>

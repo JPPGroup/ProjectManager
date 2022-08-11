@@ -1,0 +1,106 @@
+﻿@using Blazorise
+@using Blazorise.Components
+@using ProjectManager.Data
+@using ProjectManager.Data.ProjectIntegration
+@using CommonDataModels
+@inject ProjectService _projects
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <Heading Size="HeadingSize.Is4">
+                <div>
+                Invoice Total: @string.Format("{0:C}", InvoiceTotal)
+                </div>
+                <div>
+                Unapproved Invoice Total: @string.Format("{0:C}", UnapprovedInvoiceTotal)
+                </div>
+            </Heading>
+        </div>
+        <div class="col-md-6">
+            <div class="container-fluid">
+                <Heading Size="HeadingSize.Is4">
+                Invoiced
+            </Heading>
+                @foreach (Invoice i in invoices)
+                {
+                    if (!i.Draft)
+                    {
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                @i.ProjectCode
+                            </div>
+                            <div class="col-md-7">
+                                @i.ProjectName
+                            </div>
+                            <div class="col-md-2" style="text-align: right;">
+                                @string.Format("{0:C}", i.NettValue)
+                            </div>
+                        </div>
+                    }
+                }
+                <Heading Size="HeadingSize.Is4">
+                Awaiting Approval
+                </Heading>
+                @foreach (Invoice i in invoices)
+                {
+                    if (i.Draft)
+                    {
+                        <div class="row">
+                            <div class="col-md-3">
+                                @i.ProjectCode
+                            </div>
+                            <div class="col-md-7">
+                                @i.ProjectName
+                            </div>
+                            <div class="col-md-2" style="text-align: right;">
+                                @string.Format("{0:C}", i.NettValue)
+                            </div>
+                        </div>
+                    }
+                }
+            
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public DateTime TargetMonth { get; set; }
+
+    [Parameter]
+    public string Company { get; set; }
+
+    private List<Invoice> invoices { get; set; }
+
+    private decimal InvoiceTotal;
+    private decimal UnapprovedInvoiceTotal;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        invoices = new List<Invoice>();
+        InvoiceTotal = 0;
+        UnapprovedInvoiceTotal = 0;
+
+        await foreach (Invoice i in _projects.GetMonthInvoices(Company, TargetMonth))
+        {
+            invoices.Add(i);
+
+            if(i.Draft)
+            {
+                UnapprovedInvoiceTotal += i.GrossValue.Value;
+            } else
+            {
+                InvoiceTotal += i.GrossValue.Value;
+            }
+
+            StateHasChanged();
+        }
+
+
+        await base.OnParametersSetAsync();
+    }
+}

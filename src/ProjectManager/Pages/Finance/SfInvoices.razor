@@ -12,6 +12,8 @@
 
 <InvoiceList Loading="loading" Invoices="_orderedInvoices" />
 
+<MonthInvoiceContainer Company="@GetFilter()"/>
+
 @code {
     protected override string GetFilter()
     {
