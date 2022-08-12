@@ -2,11 +2,11 @@
 @using Blazorise.Components
 @using System.Globalization
 
-<Heading Size="HeadingSize.Is2">Invoices By Month</Heading>
+<Heading Size="HeadingSize.Is3">Invoices By Month</Heading>
 
-<Tabs RenderMode="TabsRenderMode.LazyLoad" SelectedTab="@selectedTab">
+<Tabs RenderMode="TabsRenderMode.LazyLoad" SelectedTab="@selectedTab" Style="font-size: 0.8em">
     <Items>
-        @for (int i = 0; i < 12; i++)
+        @for (int i = 0; i < 24; i++)
         {
             DateTime target = DateTime.Now.AddMonths(-i);
             string name = target.ToString("MMM yy");

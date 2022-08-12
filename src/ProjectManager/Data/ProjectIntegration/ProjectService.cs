@@ -127,10 +127,10 @@ namespace ProjectManager.Data.ProjectIntegration
             {
                 var builder = new UriBuilder
                 {
-                    Scheme = "https",
-                    Host = "localhost",//"services.cedarbarn.local",
-                    Port = 49155,
-                    Path = "api/invoices/bycompany",//"projects/api/invoices/bycompany",
+                    Scheme = "http",
+                    Host = "services.cedarbarn.local",
+                    Port = 80,
+                    Path = "projects/api/invoices/bycompany",
                     Query = $"company={company}&unpaidonly=false&includedrafts=true&fromDate={HttpUtility.UrlEncode(firstDayOfMonth.ToString("yyyy-MM-dd"))}&toDate={HttpUtility.UrlEncode(lastDayOfMonth.ToString("yyyy-MM-dd"))}"
                 };
 
@@ -141,11 +141,6 @@ namespace ProjectManager.Data.ProjectIntegration
             {
                 throw;
             }
-
-
-            /*TextReader reader = new StreamReader(stream);
-            string response = await reader.ReadToEndAsync();
-            var invoices = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<Invoice>>(response);*/
 
             var options = new System.Text.Json.JsonSerializerOptions
             {

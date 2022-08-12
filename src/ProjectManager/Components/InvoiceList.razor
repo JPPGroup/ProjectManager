@@ -4,19 +4,22 @@
 @using ProjectManager.Data.ProjectIntegration
 @using System.Collections.ObjectModel
 @using System.Collections.Concurrent
-<div>
-    @string.Format("{0:C}", Total) unpaid across @Invoices.Count() projects
-</div>
-<div>
+<span>
     @string.Format("{0:C}", OverdueTotal) overdue across @OverdueCount projects
-</div>
+</span>
+<span>
+     - 
+</span>
+<span>
+    @string.Format("{0:C}", Total) unpaid across @Invoices.Count() projects    
+</span>
 
 <br/>
 @if (Loading)
 {
     <Progress Value="100" Animated Striped />
 }
-<div class="container-fluid">
+<div class="container-fluid" style="max-height:30vh; overflow: auto; font-size: 0.8em">
      <div class="row" style="font-weight: bold;">
             <div class="col-md-1">
                 Code

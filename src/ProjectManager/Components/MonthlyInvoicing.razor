@@ -1,28 +1,24 @@
 ﻿@using Blazorise
 @using Blazorise.Components
+@using Blazorise.Charts
 @using ProjectManager.Data
 @using ProjectManager.Data.ProjectIntegration
 @using CommonDataModels
+@using System.Globalization
 @inject ProjectService _projects
-
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-6">
-            <Heading Size="HeadingSize.Is4">
-                <div>
-                Invoice Total: @string.Format("{0:C}", InvoiceTotal)
-                </div>
-                <div>
-                Unapproved Invoice Total: @string.Format("{0:C}", UnapprovedInvoiceTotal)
-                </div>
-            </Heading>
+        <div class="col-md-5">
+            <BarChart @ref="chart" TItem="decimal" Options="@Options" />
         </div>
-        <div class="col-md-6">
+        <div class="col-md-7">
             <div class="container-fluid">
+                
                 <Heading Size="HeadingSize.Is4">
                 Invoiced
             </Heading>
+            <div style="max-height: 17vh; font-size: 0.8em; overflow-y: auto; overflow-x: hidden;">
                 @foreach (Invoice i in invoices)
                 {
                     if (!i.Draft)
@@ -41,9 +37,12 @@
                         </div>
                     }
                 }
+                </div>
+                
                 <Heading Size="HeadingSize.Is4">
                 Awaiting Approval
                 </Heading>
+                <div style="max-height: 17vh; font-size: 0.8em; overflow-y: auto; overflow-x: hidden;">
                 @foreach (Invoice i in invoices)
                 {
                     if (i.Draft)
@@ -61,6 +60,8 @@
                         </div>
                     }
                 }
+                </div>
+
             
             </div>
         </div>
@@ -78,6 +79,23 @@
 
     private decimal InvoiceTotal;
     private decimal UnapprovedInvoiceTotal;
+
+    BarChart<decimal> chart;
+
+    BarChartOptions Options = new BarChartOptions()
+            {
+                Scales = new ChartScales()
+                {
+                    Y = new ChartAxis()
+                    {
+                        Stacked = true
+                    },
+                    X = new ChartAxis()
+                    {
+                        Stacked = true
+                    }
+                }
+            };
 
     protected override async Task OnParametersSetAsync()
     {
@@ -100,7 +118,38 @@
             StateHasChanged();
         }
 
-
+        await HandleRedraw();
         await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync( bool firstRender )
+    {
+        /*if ( firstRender )
+            {
+            await HandleRedraw();
+        }*/
+    }
+
+    async Task HandleRedraw()
+    {
+        await chart.Clear();
+
+        string[] labels = new[] { CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(TargetMonth.Month) };
+
+        var invoiced = new BarChartDataset<decimal>
+            {
+                Label = "Invoiced",
+                Data = new decimal[] { InvoiceTotal }.ToList(),
+                BackgroundColor = new List<string> { ChartColor.FromHtmlColorCode("#ff0000") }
+                
+    };
+        var approval  = new BarChartDataset<decimal>
+        {
+            Label = "Awaiting Approval",
+            Data = new decimal[] {UnapprovedInvoiceTotal }.ToList(),
+            BackgroundColor = new List<string> { ChartColor.FromHtmlColorCode("#F08080") }
+        };      
+
+        await chart.AddLabelsDatasetsAndUpdate( labels, invoiced, approval );        
     }
 }
