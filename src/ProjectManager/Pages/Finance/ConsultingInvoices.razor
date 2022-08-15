@@ -8,6 +8,8 @@
 @using System.Collections.Concurrent
 @inherits BaseInvoicePage
 
+<MonthInvoiceContainer Company="@GetFilter()"/>
+
 <h3>Unpaid Consulting Invoices</h3>
 
 <InvoiceList Loading="loading" Invoices="_orderedInvoices" />

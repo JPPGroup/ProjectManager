@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazorise.Bootstrap5" Version="1.0.5" />
+    <PackageReference Include="Blazorise.Charts" Version="1.0.6" />
     <PackageReference Include="Blazorise.Components" Version="1.0.5" />
     <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.0.5" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview4" />
@@ -30,6 +31,14 @@
     <ProjectReference Include="..\PostgresqlMigrations\PostgresqlMigrations.csproj" />
     <ProjectReference Include="..\ProjectManagerContext\ProjectManagerContext.csproj" />
     <ProjectReference Include="..\submodules\ServicesClient\src\CommonDataModels\CommonDataModels.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\MonthlyInvoicing.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Components\MonthlyInvoicing.razor" />
   </ItemGroup>
 
 </Project>
