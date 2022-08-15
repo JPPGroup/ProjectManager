@@ -13,12 +13,12 @@
             <BarChart @ref="chart" TItem="decimal" Options="@Options" />
         </div>
         <div class="col-md-7">
-            <div class="container-fluid">
-                
+            <div class="d-flex flex-column" style="">
+                <div class="flex-grow-1">
                 <Heading Size="HeadingSize.Is4">
                 Invoiced
             </Heading>
-            <div style="max-height: 17vh; font-size: 0.8em; overflow-y: auto; overflow-x: hidden;">
+            <div style="max-height: 25vh; font-size: 0.8em; overflow-y: auto; overflow-x: hidden;">
                 @foreach (Invoice i in invoices)
                 {
                     if (!i.Draft)
@@ -38,27 +38,32 @@
                     }
                 }
                 </div>
-                
-                <Heading Size="HeadingSize.Is4">
-                Awaiting Approval
-                </Heading>
-                <div style="max-height: 17vh; font-size: 0.8em; overflow-y: auto; overflow-x: hidden;">
-                @foreach (Invoice i in invoices)
+                </div>
+                <div class="flex-grow-1">
+                @if (UnapprovedInvoiceTotal > 0)
                 {
-                    if (i.Draft)
-                    {
-                        <div class="row">
-                            <div class="col-md-3">
-                                @i.ProjectCode
-                            </div>
-                            <div class="col-md-7">
-                                @i.ProjectName
-                            </div>
-                            <div class="col-md-2" style="text-align: right;">
-                                @string.Format("{0:C}", i.NettValue)
-                            </div>
-                        </div>
-                    }
+                    <Heading Size="HeadingSize.Is4">
+                        Awaiting Approval
+                    </Heading>
+                    <div style="max-height: 15vh; font-size: 0.8em; overflow-y: auto; overflow-x: hidden;">
+                        @foreach (Invoice i in invoices)
+                        {
+                            if (i.Draft)
+                            {
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        @i.ProjectCode
+                                    </div>
+                                    <div class="col-md-7">
+                                        @i.ProjectName
+                                    </div>
+                                    <div class="col-md-2" style="text-align: right;">
+                                        @string.Format("{0:C}", i.NettValue)
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
                 }
                 </div>
 
