@@ -19,6 +19,8 @@ Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "JPPProjectManager", "JPPPro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeBindings", "NativeBindings\NativeBindings.csproj", "{4ABD0661-F8FD-46FC-BA73-DEFED2302073}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectDocuments", "ProjectDocuments\ProjectDocuments.csproj", "{03E4156C-8F07-4962-BDE2-27AC31F9E6A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -183,6 +185,10 @@ Global
 		{4ABD0661-F8FD-46FC-BA73-DEFED2302073}.Release|x64.Build.0 = Release|Any CPU
 		{4ABD0661-F8FD-46FC-BA73-DEFED2302073}.Release|x86.ActiveCfg = Release|Any CPU
 		{4ABD0661-F8FD-46FC-BA73-DEFED2302073}.Release|x86.Build.0 = Release|Any CPU
+		{03E4156C-8F07-4962-BDE2-27AC31F9E6A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03E4156C-8F07-4962-BDE2-27AC31F9E6A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03E4156C-8F07-4962-BDE2-27AC31F9E6A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03E4156C-8F07-4962-BDE2-27AC31F9E6A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

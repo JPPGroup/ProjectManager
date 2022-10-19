@@ -44,10 +44,13 @@ namespace Company.WebApplication1
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddHttpClient();
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             builder.Services.AddScoped<ProjectService>();
             builder.Services.AddScoped<TaskStateMachine>();
             builder.Services.AddScoped<UINotifier>();
+            builder.Services.AddSingleton<GeocodeService>();
+            builder.Services.AddScoped<NativeBridge>();
             builder.Services.AddScoped<NativeFiles>();
 
             builder.Services.AddBlazorise(options =>

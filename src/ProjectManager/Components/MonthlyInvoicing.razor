@@ -114,10 +114,10 @@
 
             if(i.Draft)
             {
-                UnapprovedInvoiceTotal += i.GrossValue.Value;
+                UnapprovedInvoiceTotal += i.NettValue.Value;
             } else
             {
-                InvoiceTotal += i.GrossValue.Value;
+                InvoiceTotal += i.NettValue.Value;
             }
 
             StateHasChanged();

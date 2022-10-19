@@ -1,0 +1,88 @@
+﻿@page "/new/quote"
+@using Blazorise
+@using CommonDataModels
+@using ProjectDocuments
+@inject IJSRuntime JS
+
+<Steps @ref="stepsRef" @bind-SelectedStep="selectedStep" NavigationAllowed="NavigationAllowed">
+    <Items>
+        <Step Name="1">Project</Step>
+        <Step Name="2">Elements</Step>
+        <Step Name="3">
+            <Marker>
+                <Icon Name="IconName.Flag" />
+            </Marker>
+            <Caption>
+                Complete
+            </Caption>
+        </Step>        
+    </Items>
+    <Content>
+        <StepPanel Name="1">
+            <ProjectManager.Components.ProjectSelector ProjectChanged="ProjectSelected"/>
+        </StepPanel>
+        <StepPanel Name="2">
+            <Field>
+                <FieldLabel>Email address</FieldLabel>
+                <TextEdit @bind-Text="email" Placeholder="Enter email">
+                    <FieldHelp>This field is required in order to procceed to the next step.</FieldHelp>
+                </TextEdit>
+            </Field>
+        </StepPanel>
+        <StepPanel Name="3">
+
+            Completed Document
+            <Button Clicked="Download">Download</Button>
+        </StepPanel>
+    </Content>
+</Steps>
+
+<Div Display="Display.Flex" Class="justify-content-center">
+    <Button Color="Color.Secondary" Margin="Margin.Is2.FromEnd" Clicked="() => stepsRef.PreviousStep()">
+        Previous
+    </Button>
+    <Button Color="Color.Primary" Clicked="() => stepsRef.NextStep()">
+        Next
+    </Button>
+</Div>
+
+@code {
+    private Steps stepsRef;
+    private string email;
+    private string selectedStep = "1";
+
+    ProjectDetails? projectDetails;
+    QuoteDocument quoteDocument;
+
+    protected override void OnInitialized()
+    {
+        //Look at threading to improve load
+        quoteDocument = QuoteDocument.NewQuote();
+        base.OnInitialized();
+    }    
+
+    private bool NavigationAllowed( StepNavigationContext context )
+    {
+        /*if ( context.CurrentStepIndex == 2 && context.NextStepIndex > 2 && projectDetails == null )
+        {
+            return false;
+        }*/
+
+
+
+        return true;
+    }
+
+    protected async Task ProjectSelected(ProjectDetails? project)
+    {
+        projectDetails = project;
+    }
+
+    private async Task Download()
+    {                
+
+        using var streamRef = new DotNetStreamReference(stream: quoteDocument.GetStream());
+
+        await JS.InvokeVoidAsync("downloadFileFromStream", "Quote.docm", streamRef);
+    }
+}

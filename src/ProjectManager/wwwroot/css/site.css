@@ -62,3 +62,8 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+    #testMap {
+        height: 600px;
+        width: 600px;
+    }
