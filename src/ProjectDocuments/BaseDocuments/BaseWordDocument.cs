@@ -1,19 +1,18 @@
 ﻿using DocumentFormat.OpenXml.CustomProperties;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.VariantTypes;
+using DocumentFormat.OpenXml.Vml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Xml.Linq;
+using System.Xml;
 
 namespace ProjectDocuments.BaseDocuments
 {
     public class BaseWordDocument : IDisposable
     {
-        private WordprocessingDocument _document;
+        protected WordprocessingDocument _document;
         private MemoryStream _stream;
 
         public BaseWordDocument(MemoryStream document)
@@ -48,14 +47,58 @@ namespace ProjectDocuments.BaseDocuments
             {
                 item.PropertyId = pid++;
             }
-            props.Save();
+            props.Save();            
         }
 
         public MemoryStream Save()
         {
-            //Does this break stuff??
+            DocumentSettingsPart settingsPart = _document.MainDocumentPart.GetPartsOfType<DocumentSettingsPart>().First();            
+            UpdateFieldsOnOpen updateFields = new UpdateFieldsOnOpen();
+            updateFields.Val = new DocumentFormat.OpenXml.OnOffValue(true);            
+            settingsPart.Settings.PrependChild<UpdateFieldsOnOpen>(updateFields);
+            settingsPart.Settings.Save();
+
+            //Guard this somehow
+            _document.Save();
+            _document.Close();            
             _stream.Position = 0;
             return _stream;
+        }
+
+        public void ConvertFromHtml(Paragraph insertAfter, string content)
+        {
+            Paragraph lastPara = insertAfter;
+
+            content = $"<root>{content}</root>";
+            content = content.Replace("<br>", "<br/>");
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.LoadXml(content);
+            var root = xmlDocument.ChildNodes[0];
+
+            foreach (XmlNode xnode in root.ChildNodes)
+            {
+                string name = xnode.Name;
+                string value = xnode.InnerText;        
+                switch (name)
+                {
+                    case "p":
+                        if(!string.IsNullOrEmpty(value))
+                        {
+                            Paragraph para = new Paragraph();
+                            Run run = para.AppendChild(new Run());
+                            run.AppendChild(new Text(value));
+
+                            _document.MainDocumentPart.Document.Body.InsertAfter<Paragraph>(para, lastPara);
+                            lastPara = para;
+                        }
+
+                        break;
+
+                    default:
+                        throw new InvalidOperationException("unknown root element");
+                }
+                
+            }
         }
 
         public void Dispose()

@@ -3,6 +3,8 @@
 @using CommonDataModels
 @using ProjectDocuments
 @inject IJSRuntime JS
+@using Blazorise.RichTextEdit
+@using Data
 
 <Steps @ref="stepsRef" @bind-SelectedStep="selectedStep" NavigationAllowed="NavigationAllowed">
     <Items>
@@ -15,19 +17,73 @@
             <Caption>
                 Complete
             </Caption>
-        </Step>        
+        </Step>
     </Items>
     <Content>
         <StepPanel Name="1">
-            <ProjectManager.Components.ProjectSelector ProjectChanged="ProjectSelected"/>
+            <ProjectManager.Components.ProjectSelector ProjectChanged="ProjectSelected" />
         </StepPanel>
         <StepPanel Name="2">
             <Field>
-                <FieldLabel>Email address</FieldLabel>
-                <TextEdit @bind-Text="email" Placeholder="Enter email">
-                    <FieldHelp>This field is required in order to procceed to the next step.</FieldHelp>
-                </TextEdit>
+                <FieldLabel>Quote Introduction</FieldLabel>
+                <RichTextEdit @ref="richTextEditRef"
+                              Theme="RichTextEditTheme.Snow"
+                              ContentChanged="@OnContentChanged"
+                              PlaceHolder="Type your post here..."
+                              ReadOnly="@readOnly"
+                              SubmitOnEnter="false"
+                              EnterPressed="@OnSave"
+                              ToolbarPosition="Placement.Bottom">
+                    <Editor>My example content</Editor>
+                    <Toolbar>
+                        <RichTextEditToolbarGroup>
+                            <!--<RichTextEditToolbarButton Action="RichTextEditAction.Bold" />
+                            <RichTextEditToolbarButton Action="RichTextEditAction.Italic" />
+                            <RichTextEditToolbarSelect Action="RichTextEditAction.Size">
+                                <RichTextEditToolbarSelectItem Value="small" />
+                                <RichTextEditToolbarSelectItem Selected />
+                                <RichTextEditToolbarSelectItem Value="large" />
+                                <RichTextEditToolbarSelectItem Value="huge">Very Big</RichTextEditToolbarSelectItem>
+                                            </RichTextEditToolbarSelect>-->
+                            <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="bullet" />
+                        </RichTextEditToolbarGroup>
+                        <!-- Custom toolbar content -->
+                        <RichTextEditToolbarGroup Float="Float.End">
+                            <Button Clicked="@OnSave"><Icon Name="IconName.Save" /></Button>
+                        </RichTextEditToolbarGroup>
+                    </Toolbar>
+                </RichTextEdit>
             </Field>
+            <div>                
+                <DropContainer TItem="QuoteEntry" Items="@quoteEntries" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
+                    <ChildContent>
+                        <DropZone TItem="QuoteEntry" Name="Toolbox" Border="Border.Rounded" Background="Background.Light" Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" ItemsFilter="(item) => !item.Included">
+                            <ChildContent>
+                                <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Quote Items</Heading>
+                            </ChildContent>
+                            <ItemTemplate>
+                                <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+                                    <CardBody>
+                                        @context.Heading
+                                    </CardBody>
+                                </Card>
+                            </ItemTemplate>
+                        </DropZone>
+                        <DropZone TItem="QuoteEntry" Name="Selected" Border="Border.Rounded" Background="Background.Light" Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" ItemsFilter="(item) => item.Included" AllowReorder>
+                            <ChildContent>
+                                <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Selected Items</Heading>
+                            </ChildContent>
+                            <ItemTemplate>
+                                <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+                                    <CardBody>
+                                        @context.Heading
+                                    </CardBody>
+                                </Card>
+                            </ItemTemplate>
+                        </DropZone>
+                    </ChildContent>                    
+                </DropContainer>
+            </div>
         </StepPanel>
         <StepPanel Name="3">
 
@@ -54,35 +110,88 @@
     ProjectDetails? projectDetails;
     QuoteDocument quoteDocument;
 
+    List<QuoteEntry> quoteEntries;
+
     protected override void OnInitialized()
     {
         //Look at threading to improve load
         quoteDocument = QuoteDocument.NewQuote();
-        base.OnInitialized();
-    }    
 
-    private bool NavigationAllowed( StepNavigationContext context )
+        quoteEntries = new List<QuoteEntry>()
+        {
+            new QuoteEntry()
+            {
+                Heading = "Example 1",
+                Included = false
+            },
+            new QuoteEntry()
+            {
+                Heading = "Example 2",
+                Included = false
+            }
+        };
+
+        base.OnInitialized();
+    }
+
+    private bool NavigationAllowed(StepNavigationContext context)
     {
         /*if ( context.CurrentStepIndex == 2 && context.NextStepIndex > 2 && projectDetails == null )
-        {
+            {
             return false;
         }*/
 
-
+        if (context.CurrentStepIndex == 1 && context.NextStepIndex > 1 && projectDetails == null)
+        {
+            return false;
+        }
 
         return true;
     }
 
     protected async Task ProjectSelected(ProjectDetails? project)
     {
-        projectDetails = project;
+        if (project != null)
+        {
+            projectDetails = project;
+            quoteDocument.ProjectReference = projectDetails.Code;
+            quoteDocument.Title = projectDetails.Name;
+        }
     }
 
     private async Task Download()
-    {                
+    {
 
-        using var streamRef = new DotNetStreamReference(stream: quoteDocument.GetStream());
+        using var streamRef = new DotNetStreamReference(stream: quoteDocument.Save());
 
-        await JS.InvokeVoidAsync("downloadFileFromStream", "Quote.docm", streamRef);
+        await JS.InvokeVoidAsync("downloadFileFromStream", quoteDocument.GetFilename(), streamRef);
+    }
+
+    protected RichTextEdit richTextEditRef;
+    protected bool readOnly;
+    protected string contentAsHtml;
+    protected string contentAsDeltaJson;
+    protected string contentAsText;
+    protected string savedContent;
+
+    public async Task OnContentChanged()
+    {
+        contentAsHtml = await richTextEditRef.GetHtmlAsync();
+        contentAsDeltaJson = await richTextEditRef.GetDeltaAsync();
+        contentAsText = await richTextEditRef.GetTextAsync();
+    }
+
+    public async Task OnSave()
+    {
+        savedContent = await richTextEditRef.GetHtmlAsync();
+        quoteDocument.Introduction = savedContent;
+    }
+
+    private void ItemDropped(DraggableDroppedEventArgs<QuoteEntry> dropItem)
+    {
+        if (dropItem.SourceDropZoneName == dropItem.DropZoneName)
+            return;
+
+        dropItem.Item.Included = !dropItem.Item.Included;
     }
 }
