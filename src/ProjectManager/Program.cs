@@ -25,7 +25,7 @@ namespace Company.WebApplication1
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
 #if DEBUG
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, x => x.MigrationsAssembly("ProjectManager"));
 #else
                 options.UseNpgsql(connectionString, x => x.MigrationsAssembly("PostgresqlMigrations"));                                
                 //options.UseNpgsql(connectionString);

@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.VariantTypes;
 using DocumentFormat.OpenXml.Vml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -69,6 +70,19 @@ namespace ProjectDocuments.BaseDocuments
         {
             Paragraph lastPara = insertAfter;
 
+            var paragraphs = ConvertFromHtml(content);
+
+            foreach (var para in paragraphs)
+            {
+                _document.MainDocumentPart.Document.Body.InsertAfter<Paragraph>(para, lastPara);
+                lastPara = para;
+            }
+        }
+
+        public IEnumerable<Paragraph> ConvertFromHtml(string content)
+        {         
+            List<Paragraph> paragraphs = new List<Paragraph>();
+
             content = $"<root>{content}</root>";
             content = content.Replace("<br>", "<br/>");
             XmlDocument xmlDocument = new XmlDocument();
@@ -78,18 +92,17 @@ namespace ProjectDocuments.BaseDocuments
             foreach (XmlNode xnode in root.ChildNodes)
             {
                 string name = xnode.Name;
-                string value = xnode.InnerText;        
+                string value = xnode.InnerText;
                 switch (name)
                 {
                     case "p":
-                        if(!string.IsNullOrEmpty(value))
+                        if (!string.IsNullOrEmpty(value))
                         {
                             Paragraph para = new Paragraph();
                             Run run = para.AppendChild(new Run());
                             run.AppendChild(new Text(value));
 
-                            _document.MainDocumentPart.Document.Body.InsertAfter<Paragraph>(para, lastPara);
-                            lastPara = para;
+                            paragraphs.Add(para);                            
                         }
 
                         break;
@@ -97,8 +110,10 @@ namespace ProjectDocuments.BaseDocuments
                     default:
                         throw new InvalidOperationException("unknown root element");
                 }
-                
+
             }
+
+            return paragraphs;
         }
 
         public void Dispose()

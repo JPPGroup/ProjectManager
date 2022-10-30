@@ -6,7 +6,7 @@
 @using Blazorise.RichTextEdit
 @using Data
 
-<Steps @ref="stepsRef" @bind-SelectedStep="selectedStep" NavigationAllowed="NavigationAllowed">
+<Steps @ref="stepsRef" SelectedStep="@selectedStep" NavigationAllowed="NavigationAllowed" SelectedStepChanged="OnSelectedStepChanged">
     <Items>
         <Step Name="1">Project</Step>
         <Step Name="2">Elements</Step>
@@ -21,6 +21,7 @@
     </Items>
     <Content>
         <StepPanel Name="1">
+            Select
             <ProjectManager.Components.ProjectSelector ProjectChanged="ProjectSelected" />
         </StepPanel>
         <StepPanel Name="2">
@@ -64,7 +65,7 @@
                             <ItemTemplate>
                                 <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
                                     <CardBody>
-                                        @context.Heading
+                                        @((MarkupString)context.Item)
                                     </CardBody>
                                 </Card>
                             </ItemTemplate>
@@ -76,7 +77,7 @@
                             <ItemTemplate>
                                 <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
                                     <CardBody>
-                                        @context.Heading
+                                        @((MarkupString)context.Item)
                                     </CardBody>
                                 </Card>
                             </ItemTemplate>
@@ -121,12 +122,16 @@
         {
             new QuoteEntry()
             {
-                Heading = "Example 1",
+                Item = "<p>Example 1</p>",
+                Description = "<p>A sample description.</p>",
+                Exclusions = "<p>Standard things to remove</p>",
                 Included = false
             },
             new QuoteEntry()
             {
-                Heading = "Example 2",
+                Item = "<p>Example 2</p>",
+                Description = "<p>Another description.</p>",
+                Exclusions = "<p>Other things to remove</p>",
                 Included = false
             }
         };
@@ -147,6 +152,16 @@
         }
 
         return true;
+    }
+
+    private async Task OnSelectedStepChanged(string name)
+    {
+        selectedStep = name;
+
+        if(selectedStep == "3")
+        {
+            UpdateTaskList();
+        }
     }
 
     protected async Task ProjectSelected(ProjectDetails? project)
@@ -193,5 +208,10 @@
             return;
 
         dropItem.Item.Included = !dropItem.Item.Included;
+    }
+
+    private void UpdateTaskList()
+    {
+        quoteDocument.UpdateTaskTable(quoteEntries.Where(qe => qe.Included));
     }
 }

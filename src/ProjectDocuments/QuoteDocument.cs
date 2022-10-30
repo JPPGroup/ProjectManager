@@ -1,6 +1,8 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
+﻿using DocumentFormat.OpenXml.EMMA;
+using DocumentFormat.OpenXml.Wordprocessing;
 using ProjectDocuments.BaseDocuments;
 using ProjectDocuments.Properties;
+using ProjectManager.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -121,6 +123,52 @@ namespace ProjectDocuments
             _document.MainDocumentPart.Document.Save();
         }
 
+        public void UpdateTaskTable(IEnumerable<QuoteEntry> entries)
+        {
+            IEnumerable<Table> tables = _document.MainDocumentPart.Document.Body.Elements<Table>();
+            var taskTable = tables.ElementAt(1);
 
+            var rows = taskTable.Descendants<TableRow>();
+
+            /*for(int i = 2; i < rows.Count(); i++)
+            {
+                var row = rows.ElementAt(i);
+                foreach (var cell in row.Descendants<TableCell>())
+                {
+                    foreach (var para in cell.Descendants<Paragraph>())
+                    {
+                        
+                    }                    
+                }                
+            }*/
+            //Clear current entries
+            for (int i = rows.Count() - 1; i > 1; i--)
+            {
+                var row = rows.ElementAt(i);
+                row.Remove();
+            }
+
+            foreach(var entry in entries)
+            {                
+                TableRow tr = new TableRow();                               
+                TableCell tc1 = new TableCell();                
+                //tc1.Append(new TableCellProperties(new TableCellWidth() { Type = TableWidthUnitValues.Dxa, Width = "2400" }));
+                                
+                tc1.Append(ConvertFromHtml(entry.Item));                
+                tr.Append(tc1);
+
+                TableCell tc2 = new TableCell();
+                tc2.Append(ConvertFromHtml(entry.Description));
+                tr.Append(tc2);
+
+                TableCell tc3 = new TableCell();
+                tc3.Append(ConvertFromHtml(entry.Exclusions));
+                tr.Append(tc3);
+
+                taskTable.Append(tr);
+            }
+
+            _document.MainDocumentPart.Document.Save();
+        }
     }
 }
