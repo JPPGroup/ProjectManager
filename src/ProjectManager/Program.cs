@@ -48,6 +48,7 @@ namespace Company.WebApplication1
             builder.Services.AddScoped<ProjectService>();
             builder.Services.AddScoped<TaskStateMachine>();
             builder.Services.AddScoped<UINotifier>();
+            builder.Services.AddScoped<NativeFiles>();
 
             builder.Services.AddBlazorise(options =>
     {

@@ -7,6 +7,7 @@
 @inject TaskStateMachine _stateMachine;
 @inject NavigationManager _navMan;
 @inject UINotifier _notifier;
+@inject NativeFiles _nativeFiles;
 
 <PageTitle>JPP Project Manager</PageTitle>
 
@@ -71,6 +72,12 @@
 
         <article class="content px-4">
             <CascadingValue Value="@_stateMachine">
+                <Alert Color="Color.Success" @bind-Visible="@visible">
+                    <AlertDescription>
+                        For full functionality please install the native version available here
+                    </AlertDescription>
+                    <CloseButton />
+                </Alert>
                 @Body
                 <!--TODO: Review why backdrop isnt working-->
                 <TaskDetailView Visible="taskDetailVisible" OnSaveChanges="SaveChanges" OnDiscardChanges="DiscardChanges" Task="_stateMachine.SelectedTask" />
@@ -83,6 +90,7 @@
 @code {
     private bool taskDetailVisible = false;
     SnackbarStack snackbarStack;
+    bool visible = false;
 
     protected override void OnParametersSet()
     {
@@ -98,6 +106,17 @@
             StateHasChanged();
         };
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            visible = !(await _nativeFiles.Available());
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private async Task SaveChanges()
