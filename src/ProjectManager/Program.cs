@@ -51,7 +51,6 @@ namespace Company.WebApplication1
             builder.Services.AddScoped<TaskStateMachine>();
             builder.Services.AddScoped<UINotifier>();
             builder.Services.AddSingleton<GeocodeService>();
-            builder.Services.AddScoped<NativeBridge>();
             builder.Services.AddScoped<NativeFiles>();
 
             builder.Services.AddBlazorise(options =>
