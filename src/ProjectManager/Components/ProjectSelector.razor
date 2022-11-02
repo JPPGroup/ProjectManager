@@ -1,0 +1,45 @@
+﻿@using CommonDataModels
+@using Blazorise.Components
+@using ProjectManager.Data.ProjectIntegration
+@inject ProjectService _projectService
+
+<Autocomplete TItem="ProjectResponse"
+              TValue="string"
+              Data="@Projects"
+              TextField="@(( item ) => item.Name)"
+              ValueField="@(( item ) => item.Code)"              
+              @bind-SelectedText="selectedAutoCompleteText"
+              Placeholder="Search..."
+              Filter="AutocompleteFilter.StartsWith"
+              FreeTyping
+              CustomFilter="@(( item, searchValue ) => item.Name.IndexOf( searchValue, 0, StringComparison.CurrentCultureIgnoreCase ) >= 0 )"
+              SelectedValueChanged="UpdateProject">
+    <NotFoundContent> Sorry... @context was not found! :( </NotFoundContent>
+</Autocomplete>
+<NavLink href="new/project">Create new project</NavLink>
+
+
+@code {
+
+    [Parameter]
+    public EventCallback<ProjectDetails> ProjectChanged { get; set; }
+
+    public string selectedSearchValue { get; set; }
+    public string selectedAutoCompleteText { get; set; }
+
+    public IEnumerable<ProjectResponse> Projects;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //TODO: Get company from user
+        Projects = await _projectService.RequestListFromService("smithfoster");
+        await base.OnInitializedAsync();
+    }
+
+    private async Task UpdateProject(string value)
+    {
+        selectedSearchValue = value;
+        var project = await _projectService.GetProjectDetails(value);
+        await ProjectChanged.InvokeAsync(project);
+    }
+}

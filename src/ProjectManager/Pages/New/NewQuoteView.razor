@@ -1,0 +1,217 @@
+﻿@page "/new/quote"
+@using Blazorise
+@using CommonDataModels
+@using ProjectDocuments
+@inject IJSRuntime JS
+@using Blazorise.RichTextEdit
+@using Data
+
+<Steps @ref="stepsRef" SelectedStep="@selectedStep" NavigationAllowed="NavigationAllowed" SelectedStepChanged="OnSelectedStepChanged">
+    <Items>
+        <Step Name="1">Project</Step>
+        <Step Name="2">Elements</Step>
+        <Step Name="3">
+            <Marker>
+                <Icon Name="IconName.Flag" />
+            </Marker>
+            <Caption>
+                Complete
+            </Caption>
+        </Step>
+    </Items>
+    <Content>
+        <StepPanel Name="1">
+            Select
+            <ProjectManager.Components.ProjectSelector ProjectChanged="ProjectSelected" />
+        </StepPanel>
+        <StepPanel Name="2">
+            <Field>
+                <FieldLabel>Quote Introduction</FieldLabel>
+                <RichTextEdit @ref="richTextEditRef"
+                              Theme="RichTextEditTheme.Snow"
+                              ContentChanged="@OnContentChanged"
+                              PlaceHolder="Type your post here..."
+                              ReadOnly="@readOnly"
+                              SubmitOnEnter="false"
+                              EnterPressed="@OnSave"
+                              ToolbarPosition="Placement.Bottom">
+                    <Editor>My example content</Editor>
+                    <Toolbar>
+                        <RichTextEditToolbarGroup>
+                            <!--<RichTextEditToolbarButton Action="RichTextEditAction.Bold" />
+                            <RichTextEditToolbarButton Action="RichTextEditAction.Italic" />
+                            <RichTextEditToolbarSelect Action="RichTextEditAction.Size">
+                                <RichTextEditToolbarSelectItem Value="small" />
+                                <RichTextEditToolbarSelectItem Selected />
+                                <RichTextEditToolbarSelectItem Value="large" />
+                                <RichTextEditToolbarSelectItem Value="huge">Very Big</RichTextEditToolbarSelectItem>
+                                            </RichTextEditToolbarSelect>-->
+                            <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="bullet" />
+                        </RichTextEditToolbarGroup>
+                        <!-- Custom toolbar content -->
+                        <RichTextEditToolbarGroup Float="Float.End">
+                            <Button Clicked="@OnSave"><Icon Name="IconName.Save" /></Button>
+                        </RichTextEditToolbarGroup>
+                    </Toolbar>
+                </RichTextEdit>
+            </Field>
+            <div>                
+                <DropContainer TItem="QuoteEntry" Items="@quoteEntries" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
+                    <ChildContent>
+                        <DropZone TItem="QuoteEntry" Name="Toolbox" Border="Border.Rounded" Background="Background.Light" Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" ItemsFilter="(item) => !item.Included">
+                            <ChildContent>
+                                <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Quote Items</Heading>
+                            </ChildContent>
+                            <ItemTemplate>
+                                <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+                                    <CardBody>
+                                        @((MarkupString)context.Item)
+                                    </CardBody>
+                                </Card>
+                            </ItemTemplate>
+                        </DropZone>
+                        <DropZone TItem="QuoteEntry" Name="Selected" Border="Border.Rounded" Background="Background.Light" Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" ItemsFilter="(item) => item.Included" AllowReorder>
+                            <ChildContent>
+                                <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Selected Items</Heading>
+                            </ChildContent>
+                            <ItemTemplate>
+                                <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+                                    <CardBody>
+                                        @((MarkupString)context.Item)
+                                    </CardBody>
+                                </Card>
+                            </ItemTemplate>
+                        </DropZone>
+                    </ChildContent>                    
+                </DropContainer>
+            </div>
+        </StepPanel>
+        <StepPanel Name="3">
+
+            Completed Document
+            <Button Clicked="Download">Download</Button>
+        </StepPanel>
+    </Content>
+</Steps>
+
+<Div Display="Display.Flex" Class="justify-content-center">
+    <Button Color="Color.Secondary" Margin="Margin.Is2.FromEnd" Clicked="() => stepsRef.PreviousStep()">
+        Previous
+    </Button>
+    <Button Color="Color.Primary" Clicked="() => stepsRef.NextStep()">
+        Next
+    </Button>
+</Div>
+
+@code {
+    private Steps stepsRef;
+    private string email;
+    private string selectedStep = "1";
+
+    ProjectDetails? projectDetails;
+    QuoteDocument quoteDocument;
+
+    List<QuoteEntry> quoteEntries;
+
+    protected override void OnInitialized()
+    {
+        //Look at threading to improve load
+        quoteDocument = QuoteDocument.NewQuote();
+
+        quoteEntries = new List<QuoteEntry>()
+        {
+            new QuoteEntry()
+            {
+                Item = "<p>Example 1</p>",
+                Description = "<p>A sample description.</p>",
+                Exclusions = "<p>Standard things to remove</p>",
+                Included = false
+            },
+            new QuoteEntry()
+            {
+                Item = "<p>Example 2</p>",
+                Description = "<p>Another description.</p>",
+                Exclusions = "<p>Other things to remove</p>",
+                Included = false
+            }
+        };
+
+        base.OnInitialized();
+    }
+
+    private bool NavigationAllowed(StepNavigationContext context)
+    {
+        /*if ( context.CurrentStepIndex == 2 && context.NextStepIndex > 2 && projectDetails == null )
+            {
+            return false;
+        }*/
+
+        if (context.CurrentStepIndex == 1 && context.NextStepIndex > 1 && projectDetails == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task OnSelectedStepChanged(string name)
+    {
+        selectedStep = name;
+
+        if(selectedStep == "3")
+        {
+            UpdateTaskList();
+        }
+    }
+
+    protected async Task ProjectSelected(ProjectDetails? project)
+    {
+        if (project != null)
+        {
+            projectDetails = project;
+            quoteDocument.ProjectReference = projectDetails.Code;
+            quoteDocument.Title = projectDetails.Name;
+        }
+    }
+
+    private async Task Download()
+    {
+
+        using var streamRef = new DotNetStreamReference(stream: quoteDocument.Save());
+
+        await JS.InvokeVoidAsync("downloadFileFromStream", quoteDocument.GetFilename(), streamRef);
+    }
+
+    protected RichTextEdit richTextEditRef;
+    protected bool readOnly;
+    protected string contentAsHtml;
+    protected string contentAsDeltaJson;
+    protected string contentAsText;
+    protected string savedContent;
+
+    public async Task OnContentChanged()
+    {
+        contentAsHtml = await richTextEditRef.GetHtmlAsync();
+        contentAsDeltaJson = await richTextEditRef.GetDeltaAsync();
+        contentAsText = await richTextEditRef.GetTextAsync();
+    }
+
+    public async Task OnSave()
+    {
+        savedContent = await richTextEditRef.GetHtmlAsync();
+        quoteDocument.Introduction = savedContent;
+    }
+
+    private void ItemDropped(DraggableDroppedEventArgs<QuoteEntry> dropItem)
+    {
+        if (dropItem.SourceDropZoneName == dropItem.DropZoneName)
+            return;
+
+        dropItem.Item.Included = !dropItem.Item.Included;
+    }
+
+    private void UpdateTaskList()
+    {
+        quoteDocument.UpdateTaskTable(quoteEntries.Where(qe => qe.Included));
+    }
+}

@@ -1,6 +1,7 @@
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
+using Blazorise.RichTextEdit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,7 +25,7 @@ namespace Company.WebApplication1
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
 #if DEBUG
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, x => x.MigrationsAssembly("ProjectManager"));
 #else
                 options.UseNpgsql(connectionString, x => x.MigrationsAssembly("PostgresqlMigrations"));                                
                 //options.UseNpgsql(connectionString);
@@ -44,10 +45,12 @@ namespace Company.WebApplication1
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddHttpClient();
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             builder.Services.AddScoped<ProjectService>();
             builder.Services.AddScoped<TaskStateMachine>();
             builder.Services.AddScoped<UINotifier>();
+            builder.Services.AddSingleton<GeocodeService>();
             builder.Services.AddScoped<NativeFiles>();
 
             builder.Services.AddBlazorise(options =>
@@ -67,6 +70,8 @@ namespace Company.WebApplication1
                 options.Password.RequiredLength = 6;
                 options.Password.RequiredUniqueChars = 1;
             });
+
+            builder.Services.AddBlazoriseRichTextEdit();
 
 
             var app = builder.Build();
