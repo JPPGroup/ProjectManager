@@ -32,6 +32,9 @@ namespace ProjectManager.Data
 
             modelBuilder.Entity<ProjectStates>().Navigation(ps => ps.Project).AutoInclude();
             modelBuilder.Entity<ProjectStates>().Navigation(ps => ps.User).AutoInclude();
+
+            //modelBuilder.Entity<UserProfile>().Navigation(p => p.LineManager).AutoInclude();
+            //modelBuilder.Entity<UserProfile>().Navigation(p => p.Reports).AutoInclude();
         }
     }
 }
