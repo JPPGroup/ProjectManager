@@ -8,6 +8,8 @@ namespace ProjectManager.Data
         IJSObjectReference _module;
         IJSRuntime _js;
 
+        private bool? _available = null;
+
         public NativeFiles(IJSRuntime JS)
         {
             _js = JS;
@@ -21,10 +23,14 @@ namespace ProjectManager.Data
 
         public async Task<bool> Available()
         {
+            if (_available != null)
+                return _available.Value;
+
             if (_module == null)
                 await Load();
 
-            return await _module.InvokeAsync<bool>("verify");
+             _available = await _module.InvokeAsync<bool>("verify");
+            return _available.Value;
         }
     }
 }

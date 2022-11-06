@@ -4,7 +4,7 @@
 @using Darnton.Blazor.Leaflet.LeafletMap
 @using ProjectManager.Data
 @inject GeocodeService _geocodeService
-@inject NativeBridge _bridge
+@inject NativeFiles _native
 
 <Steps @ref="stepsRef" @bind-SelectedStep="selectedStep" NavigationAllowed="NavigationAllowed">
     <Items>
@@ -158,10 +158,10 @@
         </StepPanel>
         <StepPanel Name="4">
             <Heading Size="HeadingSize.Is3">Creating Job Folders...</Heading>
-            @if(!_bridge.Available)
+            <!--@if(! (await _native.Available()))
             {
                 <p>Unable to access file system from web browser to automaticaly create folders. Please install native version from TBC</p>
-            }
+            }-->
         </StepPanel>
         <!--<StepPanel Name="5">
             <Heading Size="HeadingSize.Is3">Checking Client Credit...</Heading>

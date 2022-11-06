@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Data.ProjectIntegration;
 
@@ -25,6 +26,8 @@ namespace ProjectManager.Data
         public IEnumerable<ProjectTask> WeeklyUserTasks { get; private set; }
         public IEnumerable<ProjectTask> OtherUserTasks { get; private set; }
 
+        public IEnumerable<Quote> UserQuotes { get; private set; }
+
         [ObservableProperty]
         Project? _selectedProject;
 
@@ -43,6 +46,8 @@ namespace ProjectManager.Data
             UnassignedProjects = new List<ProjectResponse>();
             ProjectStates = new List<ProjectStates>();
             _userTasks = new List<ProjectTask>();
+
+            UserQuotes = new List<Quote>();
         }
 
         public async Task<UserProfile> GetUserAsync(bool nocache = false)
@@ -100,6 +105,12 @@ namespace ProjectManager.Data
             //var unmatchedProjects = await _context.ProjectStates.Where(p => results.All(r => r.Code != p.Project.ProjectId)).ToListAsync();
 
             UnassignedProjects = results.Where(r => ProjectStates.All(ps => r.Code != ps.Project.ProjectId || ps.State == State.Unknown)).ToList();
+            
+            UserQuotes = _context.Quotes.Where(q => q.IssuerId == _user.Id);
+            foreach (Quote quote in UserQuotes)
+            {
+                _context.Entry(quote).Reference(q => q.Project).Load();
+            }
         }
 
         private async Task GenerateTaskList()

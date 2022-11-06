@@ -9,9 +9,16 @@ namespace ProjectManager.Data
         public DbSet<ProjectStates> ProjectStates => Set<ProjectStates>();
         public DbSet<ProjectTask> ProjectTasks => Set<ProjectTask>();
 
+        public DbSet<Quote> Quotes => Set<Quote>();
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+        }
+
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.Properties<decimal>().HavePrecision(10, 2);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -12,7 +12,7 @@ namespace ProjectManager.Data
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
-        public Guid? LineManagerId { get; set; }
+        public string? LineManagerId { get; set; }
         public virtual UserProfile? LineManager { get; set; }
 
         public virtual IEnumerable<UserProfile> Reports { get; set; }

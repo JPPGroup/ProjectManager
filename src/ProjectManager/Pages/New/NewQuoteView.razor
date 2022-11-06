@@ -5,6 +5,8 @@
 @inject IJSRuntime JS
 @using Blazorise.RichTextEdit
 @using Data
+@inject ApplicationDbContext _context
+@inject NativeFiles _files
 
 <Steps @ref="stepsRef" SelectedStep="@selectedStep" NavigationAllowed="NavigationAllowed" SelectedStepChanged="OnSelectedStepChanged">
     <Items>
@@ -87,21 +89,29 @@
             </div>
         </StepPanel>
         <StepPanel Name="3">
+            Quote Complete!
 
-            Completed Document
-            <Button Clicked="Download">Download</Button>
+            @if(!nativeAvailable)
+            {
+                <div>
+                <Button Clicked="Download">Download Now</Button>
+                </div>
+            }            
         </StepPanel>
     </Content>
 </Steps>
 
+@if(selectedStep != "3")
+{
 <Div Display="Display.Flex" Class="justify-content-center">
     <Button Color="Color.Secondary" Margin="Margin.Is2.FromEnd" Clicked="() => stepsRef.PreviousStep()">
         Previous
     </Button>
-    <Button Color="Color.Primary" Clicked="() => stepsRef.NextStep()">
-        Next
-    </Button>
+        <Button Color="Color.Primary" Clicked="() => stepsRef.NextStep()">
+            Next
+        </Button>    
 </Div>
+}
 
 @code {
     private Steps stepsRef;
@@ -112,6 +122,10 @@
     QuoteDocument quoteDocument;
 
     List<QuoteEntry> quoteEntries;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> _authenticationStateTask { get; set; }
+    private bool nativeAvailable = false;
 
     protected override void OnInitialized()
     {
@@ -135,8 +149,13 @@
                 Included = false
             }
         };
+    }
 
-        base.OnInitialized();
+    protected async override Task OnInitializedAsync()
+    {       
+        nativeAvailable = await _files.Available();
+
+        await base.OnInitializedAsync();
     }
 
     private bool NavigationAllowed(StepNavigationContext context)
@@ -161,6 +180,8 @@
         if(selectedStep == "3")
         {
             UpdateTaskList();
+            await SaveNative();
+            await RegisterQuote();
         }
     }
 
@@ -176,9 +197,7 @@
 
     private async Task Download()
     {
-
         using var streamRef = new DotNetStreamReference(stream: quoteDocument.Save());
-
         await JS.InvokeVoidAsync("downloadFileFromStream", quoteDocument.GetFilename(), streamRef);
     }
 
@@ -213,5 +232,49 @@
     private void UpdateTaskList()
     {
         quoteDocument.UpdateTaskTable(quoteEntries.Where(qe => qe.Included));
+    }
+
+    private async Task SaveNative()
+    {
+        if(nativeAvailable)
+        {
+            //TODO: Save to filesystem
+        }
+    }
+
+    private async Task RegisterQuote()
+    {
+        var authState = await _authenticationStateTask;
+        string? userId = authState.User.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+            throw new InvalidOperationException("User is not authenticated or ID could notbe found");
+
+        UserProfile? profile = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+        if (profile == null)
+            throw new InvalidOperationException("User not found");
+
+        Project? project = _context.Projects.FirstOrDefault(p => p.Name == $"{projectDetails.Code} - {projectDetails.Name}");
+        if (project == null)
+        {
+            //TODO: Move this to a common location
+            project = new Project()
+                {
+                    Id = Guid.NewGuid(),
+                    ProjectId = projectDetails.Code,
+                    Name = projectDetails.Name
+                };
+
+            _context.Projects.Add(project);            
+        }            
+
+        _context.Quotes.Add(new Quote() {
+                Issuer = profile,
+                Issued = DateTime.Now,
+                Project = project,
+                TotalFee = 0
+    });
+        await _context.SaveChangesAsync();
     }
 }
