@@ -238,7 +238,23 @@
     {
         if(nativeAvailable)
         {
+            Project? project = _context.Projects.FirstOrDefault(p => p.Name == $"{projectDetails.Code} - {projectDetails.Name}");
+            if (project == null)
+            {
+                //TODO: Move this to a common location
+                project = new Project()
+                    {
+                        Id = Guid.NewGuid(),
+                        ProjectId = projectDetails.Code,
+                        Name = projectDetails.Name
+                    };
+
+                _context.Projects.Add(project);
+                await _context.SaveChangesAsync();
+            }
+
             //TODO: Save to filesystem
+            string[] paths = await _files.GetProjectFolderPaths(project);            
         }
     }
 

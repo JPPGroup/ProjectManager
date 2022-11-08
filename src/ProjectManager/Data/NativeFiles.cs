@@ -32,5 +32,18 @@ namespace ProjectManager.Data
              _available = await _module.InvokeAsync<bool>("verify");
             return _available.Value;
         }
+
+        public async Task<string[]> GetProjectFolderPaths(Project project)
+        {
+            try
+            {
+                var resp = await _module.InvokeAsync<string[]>("getprojectfolderpaths", project.ProjectId);                
+                return resp;
+            }
+            catch (Exception e)
+            {
+                return new string[10];
+            }
+        }
     }
 }
