@@ -1,4 +1,5 @@
 ﻿using ProjectManager.Data;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
@@ -10,8 +11,8 @@ namespace NativeBindings
     {
         public string[] rootFolders = new string[]
     {
-        "N:\\Consulting",
-        "M:\\Consulting",
+        //"N:\\Consulting",
+        //"M:\\Consulting",
         "P:\\SF Consulting",
     };
 
@@ -28,10 +29,31 @@ namespace NativeBindings
                 {
                     if (folderPattern.IsMatch(subDirectory))
                     {
-                        var jobFolders = Directory.GetDirectories(subDirectory);
-                        foreach (var jobFolder in jobFolders)
+                        List<string> jobFolders = new List<string>();
+                         jobFolders.AddRange(Directory.GetDirectories(subDirectory));
+
+                        string abandoned = Path.Combine(subDirectory, "0-Abandoned");
+                        if (Directory.Exists(abandoned))
                         {
-                            if (jobFolder.StartsWith(projectcode))
+                            jobFolders.AddRange(Directory.GetDirectories(abandoned));
+                        }
+
+                        string completed = Path.Combine(subDirectory, "0-Completed");
+                        if (Directory.Exists(completed))
+                        {
+                            jobFolders.AddRange(Directory.GetDirectories(completed));
+                        }
+
+                        string enquiries = Path.Combine(subDirectory, "0-Enquiries");
+                        if (Directory.Exists(enquiries))
+                        {
+                            jobFolders.AddRange(Directory.GetDirectories(enquiries));
+                        }
+
+                        foreach (var jobFolder in jobFolders)
+                        {                            
+                            var dirName = new DirectoryInfo(jobFolder).Name;
+                            if (dirName.StartsWith(projectcode))
                             {
                                 foundPaths.Add(jobFolder);
                             }
@@ -43,5 +65,11 @@ namespace NativeBindings
             return foundPaths.ToArray();
         }
 
+        public void WriteToFile(string path, string datastring)
+        {
+            MemoryStream data = new MemoryStream(Convert.FromBase64String(datastring));
+            using var fileStream = File.Open(path, FileMode.CreateNew);
+            data.CopyTo(fileStream);
+        }
     }
 }

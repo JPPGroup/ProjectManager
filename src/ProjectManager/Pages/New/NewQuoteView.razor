@@ -1,10 +1,12 @@
 ﻿@page "/new/quote"
+@using ProjectManager.Data
 @using Blazorise
 @using CommonDataModels
 @using ProjectDocuments
 @inject IJSRuntime JS
 @using Blazorise.RichTextEdit
-@using Data
+@using Data;
+@using ProjectManager.Data.Native
 @inject ApplicationDbContext _context
 @inject NativeFiles _files
 
@@ -253,8 +255,8 @@
                 await _context.SaveChangesAsync();
             }
 
-            //TODO: Save to filesystem
-            string[] paths = await _files.GetProjectFolderPaths(project);            
+            var projectFolder = await _files.GetProjectFolder(project.ProjectId);
+            projectFolder.PersistQuoteDocument(quoteDocument.GetFilename(), quoteDocument.Save());
         }
     }
 

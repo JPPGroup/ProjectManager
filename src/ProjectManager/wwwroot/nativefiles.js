@@ -12,5 +12,9 @@
 }
 
 export async function getprojectfolderpaths(project) {
-    return await chrome.webview.hostObjects.sync.projectdocuments.GetProjectFolderPaths(project);    
+    return await chrome.webview.hostObjects.projectdocuments.GetProjectFolderPaths(project);    
+}
+
+export async function writetofile(project, data) {
+    return await chrome.webview.hostObjects.projectdocuments.WriteToFile(project, data);
 }

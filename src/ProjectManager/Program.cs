@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Areas.Identity;
 using ProjectManager.Data;
+using ProjectManager.Data.Native;
 using ProjectManager.Data.ProjectIntegration;
 
 namespace Company.WebApplication1
