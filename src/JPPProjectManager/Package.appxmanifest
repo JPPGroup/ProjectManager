@@ -9,7 +9,7 @@
   <Identity
     Name="dd6ea963-96b9-4354-a1b5-dee999cacd7f"
     Publisher="CN=JPP Consulting Ltd, O=JPP Consulting Ltd, STREET=4 Ironstone Way, STREET=Brixworth, L=Northampton, S=Northamptonshire, PostalCode=NN6 9UD, C=GB"
-    Version="1.0.2.0" />
+    Version="1.1.3.0" />
 
   <Properties>
     <DisplayName>JPPProjectManager</DisplayName>
