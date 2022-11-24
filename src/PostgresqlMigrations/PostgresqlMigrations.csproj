@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<BaseOutputPath>..\ProjectManager\bin\</BaseOutputPath>
+	<Configurations>Debug;Release;</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

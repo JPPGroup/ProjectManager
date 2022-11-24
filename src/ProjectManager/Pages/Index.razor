@@ -17,7 +17,8 @@
                 <Heading Size="HeadingSize.Is2">
                     Welcome @_user.FirstName @_user.LastName!
                 </Heading>
-            </div>
+                <ProjectManager.Components.QuoteSummary />
+            </div>            
             <div class="col-md-6">
                 <Accordion Class="accordion-flush">
                     <ProjectManager.Components.TaskGroupView Name="Today" Tasks="TaskState.DailyUserTasks" Expanded="true" AllowNew="false" MultipleProjects="true" />

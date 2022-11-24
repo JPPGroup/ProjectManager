@@ -3,6 +3,7 @@
 @using Blazorise
 @using Blazorise.Components
 @using Blazorise.Snackbar
+@using ProjectManager.Data.Native
 @inherits LayoutComponentBase
 @inject TaskStateMachine _stateMachine;
 @inject NavigationManager _navMan;
@@ -67,6 +68,9 @@
                             </BarDropdownMenu>
                         </BarDropdown>
                     </BarItem>
+                    <BarItem>
+                    <Switch TValue="bool" @bind-Checked="@showReports">Show Reports</Switch>
+                    </BarItem>
                 </BarStart>
                 <BarEnd>
                     <BarItem>
@@ -83,6 +87,7 @@
 
         <article class="content px-4">
             <CascadingValue Value="@_stateMachine">
+                <CascadingValue Value="@showReports">
                 <Alert Color="Color.Success" @bind-Visible="@visible">
                     <AlertDescription>
                         For full functionality please install the native version available here
@@ -93,6 +98,7 @@
                 <!--TODO: Review why backdrop isnt working-->
                 <TaskDetailView Visible="taskDetailVisible" OnSaveChanges="SaveChanges" OnDiscardChanges="DiscardChanges" Task="_stateMachine.SelectedTask" />
             </CascadingValue>
+            </CascadingValue>
             <SnackbarStack @ref="snackbarStack" Location="SnackbarStackLocation.Center" />
         </article>
     </main>
@@ -102,6 +108,9 @@
     private bool taskDetailVisible = false;
     SnackbarStack snackbarStack;
     bool visible = false;
+
+    [Parameter]
+    public bool showReports { get; set; } = false;
 
     protected override void OnParametersSet()
     {

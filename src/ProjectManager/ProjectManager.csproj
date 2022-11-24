@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-ProjectManager-41A3E716-EA39-469D-8B96-838A74683FDA</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Configurations>Debug;Release;</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
