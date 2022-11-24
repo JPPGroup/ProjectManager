@@ -24,7 +24,11 @@ namespace ProjectManager.Wpf
         public MainWindow()
         {
             InitializeComponent();
+#if DEBUG
             webView.Source = new Uri("https://localhost:7028");
+#else
+            webView.Source = new Uri("http://services.cedarbarn.local/projectmanager/");
+#endif
             webView.CoreWebView2InitializationCompleted += (e, o) =>
             {                
                 webView.CoreWebView2.AddHostObjectToScript("projectdocuments", new ProjectDocuments());
