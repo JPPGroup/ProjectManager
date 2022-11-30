@@ -1,10 +1,20 @@
 ﻿@using Blazorise
 @using Blazorise.Components
 @using ProjectManager.Data
+@using ProjectManager.Data.Native
+@inject NativeFiles _nativeFiles;
 
 @if (TaskState != null && TaskState.SelectedProject != null)
 {
     <Heading Size="HeadingSize.Is2">@TaskState.SelectedProject.ProjectId - @TaskState.SelectedProject.Name</Heading>
+        
+    <Buttons Role="ButtonsRole.Toolbar">
+        @if (folder != null)
+        {
+            <Button Color="Color.Primary" Clicked="() => folder.OpenFolder()">Open Folder</Button>
+        }
+    </Buttons>
+
     <Accordion Class="accordion-flush">
     
     <TaskGroupView Name="General Tasks" Tasks="@TaskState.SelectedProject.Tasks" Expanded="true"></TaskGroupView>
@@ -16,7 +26,16 @@
     [CascadingParameter]
     public TaskStateMachine? TaskState { get; set; }
 
-    
+    private bool nativeAvailable = false;
+    private ProjectFolder? folder;
 
-    
+    protected async override Task OnParametersSetAsync()
+    {
+        if (TaskState != null && TaskState.SelectedProject != null && await _nativeFiles.Available())
+        {
+            folder = await _nativeFiles.GetProjectFolder(TaskState.SelectedProject.ProjectId);
+        }
+
+        await base.OnParametersSetAsync();
+    }    
 }

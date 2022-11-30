@@ -17,8 +17,13 @@
 
         public async Task PersistQuoteDocument(string filename, MemoryStream data)
         {
-            string path = Path.Combine(PrimaryPath, $"Financial\\QUotes\\{filename}");
+            string path = Path.Combine(PrimaryPath, $"Financial\\Quotes\\{filename}");
             await _bridge.WriteToFile(path, data);
+        }
+
+        public async Task OpenFolder()
+        {
+            await _bridge.Open(PrimaryPath);
         }
     }
 }

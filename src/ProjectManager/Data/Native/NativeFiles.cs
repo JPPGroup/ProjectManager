@@ -1,4 +1,5 @@
 ﻿using Blazorise;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.JSInterop;
 
@@ -69,6 +70,11 @@ namespace ProjectManager.Data.Native
                 Console.WriteLine(e.Message);
                 throw;
             }
+        }
+
+        public async Task Open(string path)
+        {
+            await _module.InvokeVoidAsync("open", path);
         }
     }
 }
