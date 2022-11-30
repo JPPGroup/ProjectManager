@@ -1,19 +1,41 @@
 ﻿@using Blazorise
 @using Blazorise.Components
 @using ProjectManager.Data
+@using ProjectManager.Data.ProjectIntegration
 @using ProjectManager.Data.Native
+@using CommonDataModels
 @inject NativeFiles _nativeFiles;
+@inject ProjectService _projectService
 
-@if (TaskState != null && TaskState.SelectedProject != null)
+@if (_projectDetails != null)
 {
+    <Container Fluid>
+        <Row>
+            <Column ColumnSize="ColumnSize.Is9">
     <Heading Size="HeadingSize.Is2">@TaskState.SelectedProject.ProjectId - @TaskState.SelectedProject.Name</Heading>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is3">
+                Users
+            </Column>
+        </Row>
+    </Container>
         
     <Buttons Role="ButtonsRole.Toolbar">
         @if (folder != null)
         {
+            <Buttons>
             <Button Color="Color.Primary" Clicked="() => folder.OpenFolder()">Open Folder</Button>
+            <Button Color="Color.Primary" Clicked="() => folder.OpenFolder()">Issue</Button>            
+            </Buttons>
         }
     </Buttons>
+
+    <Heading Size="HeadingSize.Is4">Workstages</Heading>
+
+    @foreach (ProjectWorkstage workstage in _projectDetails.Workstages)
+    {
+        <div>@workstage.Name</div>
+    }
 
     <Accordion Class="accordion-flush">
     
@@ -29,11 +51,18 @@
     private bool nativeAvailable = false;
     private ProjectFolder? folder;
 
+    private ProjectDetails? _projectDetails;
+
     protected async override Task OnParametersSetAsync()
     {
-        if (TaskState != null && TaskState.SelectedProject != null && await _nativeFiles.Available())
+        if (TaskState != null && TaskState.SelectedProject != null)
         {
-            folder = await _nativeFiles.GetProjectFolder(TaskState.SelectedProject.ProjectId);
+            if (await _nativeFiles.Available())
+            {
+                folder = await _nativeFiles.GetProjectFolder(TaskState.SelectedProject.ProjectId);
+            }
+
+            _projectDetails = await _projectService.GetProjectDetails(TaskState.SelectedProject.ProjectId);
         }
 
         await base.OnParametersSetAsync();
