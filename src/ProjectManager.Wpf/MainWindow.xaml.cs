@@ -33,6 +33,9 @@ namespace ProjectManager.Wpf
             {                
                 webView.CoreWebView2.AddHostObjectToScript("projectdocuments", new ProjectDocuments());
             };
+
+            Windows.Storage.ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
         }
     }
 }
