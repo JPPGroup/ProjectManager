@@ -2,6 +2,7 @@ using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using Blazorise.RichTextEdit;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -43,6 +44,17 @@ namespace Company.WebApplication1
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             builder.Services.AddDefaultIdentity<UserProfile>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            builder.Services.AddAuthentication().AddWsFederation(options =>
+        {
+            // MetadataAddress represents the Active Directory instance used to authenticate users.
+            options.MetadataAddress = "https://login.microsoftonline.com/9d4d5e00-b133-40e3-8512-28f7f355dbf8/federationmetadata/2007-06/federationmetadata.xml";
+
+
+            // For AAD, use the Application ID URI from the app registration's Overview blade:
+            options.Wtrealm = "api://ffb0aad4-2809-4800-a175-8ea82877f2bb";
+        });
+
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddHttpContextAccessor();
