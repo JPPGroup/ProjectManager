@@ -155,6 +155,44 @@ namespace ProjectManager.Data.ProjectIntegration
             }
         }
 
+        public async IAsyncEnumerable<PurchaseOrderLineInvoice> GetIncomingMonthInvoices(string company, DateTime targetMonth)
+        {
+            Stream stream;
+            var firstDayOfMonth = new DateTime(targetMonth.Year, targetMonth.Month, 1);
+            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+            try
+            {
+                var builder = new UriBuilder
+                {
+                    Scheme = "http",
+                    Host = "services.cedarbarn.local",
+                    Port = 80,
+                    Path = "projects/api/invoices/incomingbycompany",
+                    Query = $"company={company}&unpaidonly=false&includedrafts=true&fromDate={HttpUtility.UrlEncode(firstDayOfMonth.ToString("yyyy-MM-dd"))}&toDate={HttpUtility.UrlEncode(lastDayOfMonth.ToString("yyyy-MM-dd"))}"
+                };
+
+                stream = await client.GetStreamAsync(builder.Uri);
+
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                DefaultBufferSize = 25
+            };
+
+            await foreach (PurchaseOrderLineInvoice? i in System.Text.Json.JsonSerializer.DeserializeAsyncEnumerable<PurchaseOrderLineInvoice?>(stream, options))
+            {
+                if (i != null)
+                    yield return i;
+            }
+        }
+
         public async Task<IList<ProjectResponse>> RequestListFromService(string company)
         {
              var builder = new UriBuilder

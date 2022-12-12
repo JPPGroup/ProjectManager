@@ -87,7 +87,8 @@
             decimal total = 0;
             foreach(Invoice i in Invoices)
             {
-                total += i.TotalUnpaid.Value;
+                if(i.TotalUnpaid.HasValue)
+                    total += i.TotalUnpaid.Value;
             }
             return total;
         }
@@ -102,7 +103,10 @@
             {
                 if (((int)(DateTime.Now - i.DueDate).Value.TotalDays) > 0)
                 {
-                    total += i.TotalUnpaid.Value;
+                    if (i.TotalUnpaid.HasValue)
+                    {
+                        total += i.TotalUnpaid.Value;
+                    }
                 }
             }
             return total;
