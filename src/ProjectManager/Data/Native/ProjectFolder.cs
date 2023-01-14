@@ -25,5 +25,11 @@
         {
             await _bridge.Open(PrimaryPath);
         }
+
+        public async Task<IEnumerable<string>> GetIssuePaths()
+        {
+            string path = Path.Combine(PrimaryPath, $"Drawings\\JPP\\Issued");
+            return await _bridge.GetSubFiles(path);
+        }
     }
 }

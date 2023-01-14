@@ -6,6 +6,7 @@
 @using CommonDataModels
 @inject NativeFiles _nativeFiles;
 @inject ProjectService _projectService
+@inject IModalService _modalService
 
 @if (_projectDetails != null)
 {
@@ -21,13 +22,13 @@
     </Container>
         
     <Buttons Role="ButtonsRole.Toolbar">
+    <Buttons>
         @if (folder != null)
         {
-            <Buttons>
             <Button Color="Color.Primary" Clicked="() => folder.OpenFolder()">Open Folder</Button>
-            <Button Color="Color.Primary" Clicked="() => folder.OpenFolder()">Issue</Button>            
-            </Buttons>
         }
+            <Button Color="Color.Primary" Clicked="ShowRegister">Document Register</Button>
+    </Buttons >
     </Buttons>
 
     <Heading Size="HeadingSize.Is4">Workstages</Heading>
@@ -42,6 +43,13 @@
     <TaskGroupView Name="General Tasks" Tasks="@TaskState.SelectedProject.Tasks" Expanded="true"></TaskGroupView>
 
     </Accordion>    
+}
+else
+{
+    if (TaskState != null && TaskState.SelectedProject != null)
+    {
+        <Progress Value="100" Animated Striped/>
+    }
 }
 
 @code {
@@ -66,5 +74,10 @@
         }
 
         await base.OnParametersSetAsync();
-    }    
+    }
+
+    private void ShowRegister()
+    {
+        _modalService.Show<DocumentRegisterView>("Document Register", parameters => parameters.Add(x => x.Project, TaskState.SelectedProject));
+    }
 }

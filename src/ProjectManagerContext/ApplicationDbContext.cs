@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ProjectManagerContext.Data;
 
 namespace ProjectManager.Data
 {
@@ -10,6 +11,8 @@ namespace ProjectManager.Data
         public DbSet<ProjectTask> ProjectTasks => Set<ProjectTask>();
 
         public DbSet<Quote> Quotes => Set<Quote>();
+
+        public DbSet<DrawingIssue> DrawingIssues => Set<DrawingIssue>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -39,6 +42,9 @@ namespace ProjectManager.Data
 
             modelBuilder.Entity<ProjectStates>().Navigation(ps => ps.Project).AutoInclude();
             modelBuilder.Entity<ProjectStates>().Navigation(ps => ps.User).AutoInclude();
+
+            modelBuilder.Entity<DrawingIssue>().Navigation(di => di.Contacts).AutoInclude();
+            modelBuilder.Entity<DrawingIssue>().Navigation(di => di.Drawings).AutoInclude();
 
             //modelBuilder.Entity<UserProfile>().Navigation(p => p.LineManager).AutoInclude();
             //modelBuilder.Entity<UserProfile>().Navigation(p => p.Reports).AutoInclude();

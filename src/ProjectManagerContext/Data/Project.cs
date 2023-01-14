@@ -1,4 +1,6 @@
-﻿namespace ProjectManager.Data
+﻿using ProjectManagerContext.Data;
+
+namespace ProjectManager.Data
 {
     public class Project
     {
@@ -8,6 +10,8 @@
 
         public List<ProjectStates> States { get; set; }
         public List<ProjectTask> Tasks { get; set; }
+
+        public virtual ICollection<DrawingIssue> DrawingIssues { get; set; }
 
         public Project()
         {

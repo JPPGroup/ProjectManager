@@ -1,8 +1,10 @@
-﻿<CascadingAuthenticationState>
+﻿@using Blazorise
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            <Blazorise.ModalProvider Centered="true" Size="ModalSize.Fullscreen"/>
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>
@@ -12,3 +14,4 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+

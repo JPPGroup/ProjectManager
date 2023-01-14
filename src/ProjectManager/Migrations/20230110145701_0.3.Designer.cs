@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManager.Data;
 
@@ -11,9 +12,10 @@ using ProjectManager.Data;
 namespace ProjectManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230110145701_0.3")]
+    partial class _03
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +36,7 @@ namespace ProjectManager.Migrations
 
                     b.HasIndex("IssuesId");
 
-                    b.ToTable("ContactDrawingIssue", (string)null);
+                    b.ToTable("ContactDrawingIssue");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -190,7 +192,7 @@ namespace ProjectManager.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("ProjectManager.Data.ProjectStates", b =>
@@ -215,7 +217,7 @@ namespace ProjectManager.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProjectStates", (string)null);
+                    b.ToTable("ProjectStates");
                 });
 
             modelBuilder.Entity("ProjectManager.Data.ProjectTask", b =>
@@ -262,7 +264,7 @@ namespace ProjectManager.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectTasks", (string)null);
+                    b.ToTable("ProjectTasks");
                 });
 
             modelBuilder.Entity("ProjectManager.Data.Quote", b =>
@@ -297,7 +299,7 @@ namespace ProjectManager.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Quotes", (string)null);
+                    b.ToTable("Quotes");
                 });
 
             modelBuilder.Entity("ProjectManager.Data.UserProfile", b =>
@@ -396,7 +398,7 @@ namespace ProjectManager.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Contact", (string)null);
+                    b.ToTable("Contact");
                 });
 
             modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssue", b =>
@@ -415,7 +417,7 @@ namespace ProjectManager.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("DrawingIssues", (string)null);
+                    b.ToTable("DrawingIssues");
                 });
 
             modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssueEntry", b =>
@@ -443,7 +445,7 @@ namespace ProjectManager.Migrations
 
                     b.HasIndex("DrawingIssueId");
 
-                    b.ToTable("DrawingIssueEntry", (string)null);
+                    b.ToTable("DrawingIssueEntry");
                 });
 
             modelBuilder.Entity("ContactDrawingIssue", b =>

@@ -86,5 +86,10 @@ namespace NativeBindings
                 Process.Start(startInfo);
             }
         }
+
+        public string[] GetSubFiles(string path)
+        {
+            return Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+        }
     }
 }

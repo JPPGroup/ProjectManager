@@ -76,5 +76,19 @@ namespace ProjectManager.Data.Native
         {
             await _module.InvokeVoidAsync("open", path);
         }
+
+        public async Task<string[]> GetSubFiles(string path)
+        {
+            try
+            {
+                var resp = await _module.InvokeAsync<string[]>("getsubfiles", path);
+                return resp;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
+        }
     }
 }

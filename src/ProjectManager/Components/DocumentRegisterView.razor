@@ -1,0 +1,107 @@
+﻿@using ProjectManager.Data
+@using ProjectManager.Data.Native
+@inject NativeFiles _nativeFiles;
+@using Blazorise
+@using ProjectDocuments
+
+<Buttons Role="ButtonsRole.Toolbar">
+    <Buttons>
+        @if (folder != null)
+        {
+            <Button Color="Color.Primary" Clicked="SyncFolder" Loading="@isSyncing">Sync</Button>
+        }
+        <!--<Button Color="Color.Primary" Clicked="ShowRegister">Document Register</Button>-->
+    </Buttons >
+    
+    
+</Buttons>
+
+<Table Striped>
+    <TableHeader>
+    <TableRow>
+        <TableRowCell>Drawing Number</TableRowCell>
+        <TableRowCell>Drawing Name</TableRowCell>
+        <TableRowCell>Latest Revision</TableRowCell>
+        @foreach (DrawingIssue di in _manager.Issue.Values)
+        {
+            <TableRowCell><div style="writing-mode: vertical-lr">@di.Date.ToShortDateString()<br/>@di.Name</div></TableRowCell>
+        }
+    </TableRow>
+    </TableHeader>
+    <TableBody>
+        @foreach (DwgName name in _manager.Names)
+        {
+            <TableRow>
+                <TableRowHeader>@name.Number</TableRowHeader>
+                <TableRowCell>@name.Name</TableRowCell>
+                <TableRowCell>@name.Revision</TableRowCell>
+                @foreach (DrawingIssue di in _manager.Issue.Values)
+                {
+                    <TableRowCell>
+                        @if (@di.Entries.ContainsKey(name.Number))
+                        {
+                            @di.Entries[name.Number].Revision
+                        }
+                        else
+                        {
+                            @(" - ")
+                        }
+                    </TableRowCell>
+
+                }
+            </TableRow>
+        }
+    </TableBody>
+</Table>
+
+@if (syncErrors.Any())
+{
+    <div>
+        Errors encountered:
+    </div>
+    <ul>
+    @foreach (string syncError in syncErrors)
+    {
+    <li>@syncError</li>
+    }
+    </ul>
+}
+
+@code {
+    [Parameter]
+    public Project? Project { get; set; }
+
+    DrawingIssueManager _manager;
+    private ProjectFolder? folder;
+
+    public IEnumerable<string> syncErrors;
+
+    private bool isSyncing = false;
+
+    protected override void OnParametersSet()
+    {
+        _manager = Project.GetDrawingIssueManager();
+        syncErrors = new List<string>();
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (await _nativeFiles.Available())
+        {
+            folder = await _nativeFiles.GetProjectFolder(Project.ProjectId);
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task SyncFolder()
+    {
+        isSyncing = true;
+        StateHasChanged();
+        IEnumerable<string> drawingFiles = await folder.GetIssuePaths();
+        syncErrors = _manager.PopulateFromFileSystem(drawingFiles);
+        isSyncing = false;
+        StateHasChanged();
+    }
+
+}
