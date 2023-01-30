@@ -1,0 +1,59 @@
+﻿@using Blazorise
+@using ProjectManager.Data
+@using ProjectDocuments
+@inject IJSRuntime JS
+
+    <Buttons Role="ButtonsRole.Toolbar">
+        <Buttons>
+        <Button Color="Color.Primary" Clicked="Download">Download Now</Button>
+            <Button Color="Color.Primary" Clicked="SaveToFolder" Disabled="@Flags.NativeFileNotAvailable">Save to Job Folder</Button>
+        <Button Color="Color.Primary" Clicked="SavePdfToFolder" Disabled="@Flags.NativeOfficeNotAvailable">Save PDF to Job Folder</Button>
+        </Buttons>
+    </Buttons>
+
+@code {
+    [CascadingParameter]
+    public FeatureFlags Flags { get; set; }
+
+    [Parameter]
+    public IWritableDocument Document { get; set; }
+
+    [Parameter]
+    public EventCallback OnBeforeSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnAfterSave { get; set; }
+
+    private async Task Download()
+    {
+        await OnBeforeSave.InvokeAsync();
+
+        string filename = Document.GetFilename();
+
+        using var streamRef = new DotNetStreamReference(stream: Document.Save());
+        await JS.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+
+        OnAfterSave.InvokeAsync();
+    }
+
+    private async Task SaveToFolder()
+    {
+        await OnBeforeSave.InvokeAsync();
+
+        using var streamRef = new DotNetStreamReference(stream: Document.Save());
+        throw new NotImplementedException();
+
+        OnAfterSave.InvokeAsync();
+    }
+
+    private async Task SavePdfToFolder()
+    {
+        await OnBeforeSave.InvokeAsync();
+
+        using var streamRef = new DotNetStreamReference(stream: Document.Save());
+        throw new NotImplementedException();
+
+        OnAfterSave.InvokeAsync();
+    }
+
+}

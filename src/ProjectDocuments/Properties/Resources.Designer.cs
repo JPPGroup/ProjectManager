@@ -69,5 +69,15 @@ namespace ProjectDocuments.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] F11_3_Variation_Order_Request___VOR {
+            get {
+                object obj = ResourceManager.GetObject("F11-3 Variation Order Request - VOR", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

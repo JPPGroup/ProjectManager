@@ -14,6 +14,8 @@ namespace ProjectManager.Data
 
         public DbSet<DrawingIssue> DrawingIssues => Set<DrawingIssue>();
 
+        public DbSet<Variation> Variations => Set<Variation>();
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -35,6 +37,25 @@ namespace ProjectManager.Data
             modelBuilder.Entity<UserProfile>()
                 .Property(e => e.LastName)
                 .HasMaxLength(20);
+
+            modelBuilder.Entity<Variation>()
+                .HasOne(v => v.Originator)
+                .WithMany(c => c.VariationsIssued)
+                .HasForeignKey(v => v.OriginatorId)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Variation>()
+                .HasOne(v => v.Acceptor)
+                .WithMany(c => c.VariationsAccepted)
+                .HasForeignKey(v => v.AcceptorId)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Variation>()
+                .HasOne(v => v.RaisedBy)
+                .WithMany(u => u.VariationsRaised)
+                .HasForeignKey(v => v.RaisedById)
+                .IsRequired(false);
+                
 
             //TODO: Optimise
             modelBuilder.Entity<Project>().Navigation(p => p.States).AutoInclude();

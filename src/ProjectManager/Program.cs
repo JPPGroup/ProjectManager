@@ -56,6 +56,7 @@ namespace Company.WebApplication1
             builder.Services.AddScoped<UINotifier>();
             builder.Services.AddSingleton<GeocodeService>();
             builder.Services.AddScoped<NativeFiles>();
+            builder.Services.AddScoped<FeatureFlags>();
 
             builder.Services.AddBlazorise(options =>
     {

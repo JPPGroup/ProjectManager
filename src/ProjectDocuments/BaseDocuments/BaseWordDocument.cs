@@ -11,7 +11,7 @@ using System.Xml;
 
 namespace ProjectDocuments.BaseDocuments
 {
-    public class BaseWordDocument : IDisposable
+    public abstract class BaseWordDocument : IDisposable, IWritableDocument
     {
         protected WordprocessingDocument _document;
         private MemoryStream _stream;
@@ -65,6 +65,8 @@ namespace ProjectDocuments.BaseDocuments
             _stream.Position = 0;
             return _stream;
         }
+
+        public abstract string GetFilename();
 
         public void ConvertFromHtml(Paragraph insertAfter, string content)
         {

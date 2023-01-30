@@ -25,12 +25,4 @@ namespace ProjectManagerContext.Data
         public Guid DrawingIssueId { get; set; }
         public virtual DrawingIssue Issue { get; set; }
     }
-
-    public class Contact
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string Company { get; set; }
-        public ICollection<DrawingIssue> Issues { get; set; }
-    }
 }

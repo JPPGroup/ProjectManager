@@ -1,4 +1,5 @@
 ﻿@page "/new/quote"
+@using ProjectManager.Components
 @using ProjectManager.Data
 @using Blazorise
 @using CommonDataModels
@@ -93,12 +94,7 @@
         <StepPanel Name="3">
             Quote Complete!
 
-            @if(!nativeAvailable)
-            {
-                <div>
-                <Button Clicked="Download">Download Now</Button>
-                </div>
-            }            
+            <FileCreationComponent Document="quoteDocument"/>
         </StepPanel>
     </Content>
 </Steps>
@@ -195,12 +191,6 @@
             quoteDocument.ProjectReference = projectDetails.Code;
             quoteDocument.Title = projectDetails.Name;
         }
-    }
-
-    private async Task Download()
-    {
-        using var streamRef = new DotNetStreamReference(stream: quoteDocument.Save());
-        await JS.InvokeVoidAsync("downloadFileFromStream", quoteDocument.GetFilename(), streamRef);
     }
 
     protected RichTextEdit richTextEditRef;

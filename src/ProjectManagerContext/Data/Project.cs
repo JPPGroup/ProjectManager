@@ -12,6 +12,7 @@ namespace ProjectManager.Data
         public List<ProjectTask> Tasks { get; set; }
 
         public virtual ICollection<DrawingIssue> DrawingIssues { get; set; }
+        public virtual ICollection<Variation> Variations { get; set; }
 
         public Project()
         {

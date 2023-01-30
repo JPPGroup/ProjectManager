@@ -4,9 +4,12 @@
 @using ProjectManager.Data.ProjectIntegration
 @using ProjectManager.Data.Native
 @using CommonDataModels
+@using Microsoft.EntityFrameworkCore
+@using ProjectManagerContext.Data
 @inject NativeFiles _nativeFiles;
 @inject ProjectService _projectService
 @inject IModalService _modalService
+@inject ApplicationDbContext _context
 
 @if (_projectDetails != null)
 {
@@ -38,6 +41,43 @@
         <div>@workstage.Name</div>
     }
 
+    <Heading Size="HeadingSize.Is4">Variations</Heading>
+    <Button Color="Color.Primary" Clicked="NewVariation">Add Variation</Button>
+    @if (_projectVariations.Any())
+    {
+        <Table Striped>
+            <TableHeader>
+                <TableRow>
+                    <TableRowCell>Reference</TableRowCell>
+                    <TableRowCell>Approved</TableRowCell>
+                    <TableRowCell>Value</TableRowCell>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+            @foreach (Variation v in _projectVariations)
+            {
+                    <TableRow>
+                        <TableRowHeader>
+                            @v.Reference
+                        </TableRowHeader>
+                        <TableRowCell>@{
+                                          if (v.Accepted != null)
+                                          {
+                                              @("✅")
+                                          }
+                                          else
+                                          {
+                                              @("X")
+                                          }
+                                      }</TableRowCell>
+                        <TableRowCell>@v.Charge</TableRowCell>
+                
+                </TableRow>
+            }
+            </TableBody>
+        </Table>
+    }
+
     <Accordion Class="accordion-flush">
     
     <TaskGroupView Name="General Tasks" Tasks="@TaskState.SelectedProject.Tasks" Expanded="true"></TaskGroupView>
@@ -61,16 +101,27 @@ else
 
     private ProjectDetails? _projectDetails;
 
+    private IEnumerable<Variation> _projectVariations;
+
     protected async override Task OnParametersSetAsync()
     {
         if (TaskState != null && TaskState.SelectedProject != null)
         {
+            Task<ProjectFolder> folderTask = null;
+            Task<ProjectDetails> detailTask = null;
+            Task<List<Variation>> variationTask = null;
+
             if (await _nativeFiles.Available())
             {
-                folder = await _nativeFiles.GetProjectFolder(TaskState.SelectedProject.ProjectId);
+                 folderTask = _nativeFiles.GetProjectFolder(TaskState.SelectedProject.ProjectId);
             }
 
-            _projectDetails = await _projectService.GetProjectDetails(TaskState.SelectedProject.ProjectId);
+            detailTask = _projectService.GetProjectDetails(TaskState.SelectedProject.ProjectId);
+            variationTask = _context.Variations.Where(v => v.Project.ProjectId == TaskState.SelectedProject.ProjectId).ToListAsync(); ;
+
+            folder = await folderTask;
+            _projectDetails = await detailTask;
+            _projectVariations = await variationTask;
         }
 
         await base.OnParametersSetAsync();
@@ -79,5 +130,11 @@ else
     private void ShowRegister()
     {
         _modalService.Show<DocumentRegisterView>("Document Register", parameters => parameters.Add(x => x.Project, TaskState.SelectedProject));
+    }
+
+    private async void NewVariation()
+    {
+        await _modalService.Show<NewVariationView>("New Variation", parameters => parameters.Add(x => x.Project, TaskState.SelectedProject), new ModalInstanceOptions() { UseModalStructure = false });
+        StateHasChanged();
     }
 }
