@@ -33,9 +33,12 @@
                             <BarItem>
                                 <BarLink To="projects">Projects</BarLink>
                             </BarItem>
-                            <BarItem>
-                                <BarLink To="workplan">Workplan</BarLink>
-                            </BarItem>
+                            @if (Flags.TasksEnabled)
+                            {
+                                <BarItem>
+                                    <BarLink To="workplan">Workplan</BarLink>
+                                </BarItem>
+                            }
                             <BarItem>
                                 <BarDropdown>
                                     <BarDropdownToggle>New</BarDropdownToggle>

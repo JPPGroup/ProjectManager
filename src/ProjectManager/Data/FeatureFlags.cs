@@ -5,11 +5,11 @@ namespace ProjectManager.Data
 {
     public class FeatureFlags
     {
-        public bool Tasks { get; set; }
-
         public bool NativeFileAvailable { get; set; }
 
         public bool NativeOfficeAvailable { get; set; }
+
+        public bool TasksEnabled { get; set; } = false;
 
         public bool NativeFileNotAvailable
         {
@@ -35,6 +35,5 @@ namespace ProjectManager.Data
             NativeFileAvailable = await _nativeFiles.Available();
             NativeOfficeAvailable = false;
         }
-
     }
 }

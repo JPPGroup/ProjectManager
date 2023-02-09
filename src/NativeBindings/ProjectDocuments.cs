@@ -75,7 +75,7 @@ namespace NativeBindings
 
         public void Open(string path)
         {
-            if (Directory.Exists(path))
+            if (Directory.Exists(path) || File.Exists(path))
             {
 
                 ProcessStartInfo startInfo = new ProcessStartInfo

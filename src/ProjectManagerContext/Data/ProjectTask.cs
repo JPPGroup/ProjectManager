@@ -10,12 +10,12 @@ namespace ProjectManager.Data
         public Project Project { get; set; } = null!;
 
         [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; }
         [Required]
-        public string Description { get; set; }
+        public required string Description { get; set; }
         public ProjectTaskStatus Status { get; set; }
         [Required]
-        public DateTime Due { get; set; }        
+        public required DateTime Due { get; set; }        
         public DateTime Completed { get; private set; }
         [Required]
         public int EstimatedDuration { get; set; }

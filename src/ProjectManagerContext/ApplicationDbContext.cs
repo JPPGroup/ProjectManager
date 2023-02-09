@@ -65,7 +65,7 @@ namespace ProjectManager.Data
             modelBuilder.Entity<ProjectStates>().Navigation(ps => ps.User).AutoInclude();
 
             modelBuilder.Entity<DrawingIssue>().Navigation(di => di.Contacts).AutoInclude();
-            modelBuilder.Entity<DrawingIssue>().Navigation(di => di.Drawings).AutoInclude();
+            modelBuilder.Entity<DrawingIssue>().Navigation(di => di.Entries).AutoInclude();
 
             //modelBuilder.Entity<UserProfile>().Navigation(p => p.LineManager).AutoInclude();
             //modelBuilder.Entity<UserProfile>().Navigation(p => p.Reports).AutoInclude();

@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using Microsoft.IdentityModel.Xml;
 using ProjectDocuments;
 using ProjectManagerContext.Data;
 
@@ -9,28 +9,53 @@ namespace ProjectManager.Data
     public partial class DrawingIssueManager
     {
         private List<IDwgNamingConvention> nameSchemes = new List<IDwgNamingConvention>();
+        private Project _project;
+        private ApplicationDbContext _context;
 
         public List<DwgName> Names { get; set; }
         public Dictionary<string, DrawingIssue> Issue { get; set; }
 
-        public DrawingIssueManager()
+        public List<string> Errors { get; set; }
+
+        public DrawingIssueManager(Project project, ApplicationDbContext context)
         {
             nameSchemes.Add(new JppConvention());
             nameSchemes.Add(new SfConvention2());
             nameSchemes.Add(new SfConvention());
             Names = new List<DwgName>();
             Issue = new Dictionary<string, DrawingIssue>();
+            _project = project;
+            _context = context;
+            Errors  = new List<string>();
         }
 
-        public void PopulateFromCache(IEnumerable<ProjectManagerContext.Data.DrawingIssue> issues)
+        public void PopulateFromCache()
         {
-
+            _context.Entry(_project).Collection(p => p.DrawingIssues).Load();
+            foreach (DrawingIssue di in _project.DrawingIssues)
+            {
+                foreach (ProjectManagerContext.Data.DrawingIssueEntry drawingIssueEntry in di.Entries)
+                {
+                    ProcessDrawingEntry(new DwgName()
+                    {
+                        Name = drawingIssueEntry.Title,
+                        Number = drawingIssueEntry.Number,
+                        Revision = drawingIssueEntry.Revision,
+                        ProjectCode = _project.ProjectId
+                    });
+                }
+                Issue.Add(di.Name, di);
+            }
         }
 
-        public List<string> PopulateFromFileSystem(IEnumerable<string> files)
+        public void AddIssue(DrawingIssue issue)
         {
-            List<string> errors = new List<string>();
+            Issue.Add(issue.Name, issue);
+            _project.DrawingIssues.Add(issue);
+        }
 
+        public void PopulateFromFileSystem(IEnumerable<string> files)
+        {
             foreach (string file in files)
             {
                 if (Path.GetExtension(file) == ".pdf")
@@ -54,7 +79,7 @@ namespace ProjectManager.Data
 
                     if (name == null)
                     {
-                        errors.Add($"{file} was not in a recognized format.");
+                        Errors.Add($"{file} was not in a recognized format.");
                     }
                     else
                     {
@@ -66,43 +91,49 @@ namespace ProjectManager.Data
                         {
                             if (!Issue.ContainsKey(issuename))
                             {
-                                Issue.Add(issuename, new DrawingIssue()
+                                AddIssue(new DrawingIssue()
                                 {
                                     Date = DateTime.ParseExact(date, "yyMMdd", CultureInfo.InvariantCulture),
                                     Name = issuename
                                 });
+                                
                             }
 
-                            Issue[issuename].SetEntry(name.Number, name.Revision, file);
+                            Issue[issuename].SetEntry(name.Number, name.Revision, file, name.Name);
                         }
 
                         //Validate
-                        //Search for same name
-                        var matches = Names.Where(n => n.Number == name.Number);
-                        if (matches.Any())
-                        {
-                            foreach (var match in matches)
-                            {
-                                if (name.Name != match.Name)
-                                {
-                                    errors.Add($"For {name.Number}, a different title of {name.Name} was found");
-                                }
-
-                                //Update latest revision
-                                match.Revision = GetLatestRevision(match.Revision, name.Revision);
-                            }
-                        }
-                        else
-                        {
-                            Names.Add(name);
-                        }
+                        ProcessDrawingEntry(name);
                     }
                 }
             }
 
             OrderDrawings();
+            //TODO: Await
+            _context.SaveChangesAsync();
+        }
 
-            return errors;
+        private void ProcessDrawingEntry(DwgName name)
+        {
+            //Search for same name
+            var matches = Names.Where(n => n.Number == name.Number);
+            if (matches.Any())
+            {
+                foreach (var match in matches)
+                {
+                    if (name.Name != match.Name)
+                    {
+                        Errors.Add($"For {name.Number}, a different title of {name.Name} was found");
+                    }
+
+                    //Update latest revision
+                    match.Revision = GetLatestRevision(match.Revision, name.Revision);
+                }
+            }
+            else
+            {
+                Names.Add(name);
+            }
         }
 
         private void OrderDrawings()
@@ -214,10 +245,10 @@ namespace ProjectManager.Data
 
     public static class DrawingIssueManagerExtensions
     {
-        public static DrawingIssueManager GetDrawingIssueManager(this Project project)
+        public static DrawingIssueManager GetDrawingIssueManager(this Project project, ApplicationDbContext context)
         {
-            DrawingIssueManager drawingIssueManager = new DrawingIssueManager();
-            drawingIssueManager.PopulateFromCache(project.DrawingIssues);
+            DrawingIssueManager drawingIssueManager = new DrawingIssueManager(project, context);
+            drawingIssueManager.PopulateFromCache();
             return drawingIssueManager;
         }
     }

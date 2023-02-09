@@ -1,8 +1,11 @@
 ﻿@using ProjectManager.Data
 @using ProjectManager.Data.Native
 @inject NativeFiles _nativeFiles;
+@inject ApplicationDbContext _context
 @using Blazorise
+@using CommunityToolkit.Diagnostics
 @using ProjectDocuments
+@using ProjectManagerContext.Data
 
 <Buttons Role="ButtonsRole.Toolbar">
     <Buttons>
@@ -34,13 +37,42 @@
             <TableRow>
                 <TableRowHeader>@name.Number</TableRowHeader>
                 <TableRowCell>@name.Name</TableRowCell>
-                <TableRowCell>@name.Revision</TableRowCell>
+                <TableRowCell>
+                    @if (Flags.NativeFileAvailable)
+                    {
+                        DrawingIssue di = _manager.Issue.Values.Last(di =>
+                        {
+                            if (di.Entries.Any(di => di.Number == name.Number))
+                            {
+                                return di.GetEntry(name.Number).Revision == name.Revision;
+                            }
+                            return false;
+                        });
+
+                        <Anchor Clicked="async () => await OpenDocument(di.GetEntry(name.Number).Path)">
+                            @name.Revision
+                        </Anchor>
+                    }
+                    else
+                    {
+                        @name.Revision
+                    }
+                </TableRowCell>
                 @foreach (DrawingIssue di in _manager.Issue.Values)
                 {
                     <TableRowCell>
-                        @if (@di.Entries.ContainsKey(name.Number))
+                        @if (@di.Entries.Any(di => di.Number == name.Number))
                         {
-                            @di.Entries[name.Number].Revision
+                            @if (Flags.NativeFileAvailable)
+                            {
+                                <Anchor Clicked="async () => await OpenDocument(di.GetEntry(name.Number).Path)">
+                                    @di.GetEntry(name.Number).Revision
+                                </Anchor>
+                            }
+                            else
+                            {
+                                @di.GetEntry(name.Number).Revision
+                            }
                         }
                         else
                         {
@@ -54,13 +86,13 @@
     </TableBody>
 </Table>
 
-@if (syncErrors.Any())
+@if (_manager.Errors.Any())
 {
     <div>
         Errors encountered:
     </div>
     <ul>
-    @foreach (string syncError in syncErrors)
+    @foreach (string syncError in _manager.Errors)
     {
     <li>@syncError</li>
     }
@@ -71,17 +103,18 @@
     [Parameter]
     public Project? Project { get; set; }
 
-    DrawingIssueManager _manager;
+    DrawingIssueManager? _manager;
     private ProjectFolder? folder;
-
-    public IEnumerable<string> syncErrors;
 
     private bool isSyncing = false;
 
+    [CascadingParameter]
+    public FeatureFlags? Flags { get; set; }
+
     protected override void OnParametersSet()
     {
-        _manager = Project.GetDrawingIssueManager();
-        syncErrors = new List<string>();
+        Guard.IsNotNull(Project);
+        _manager = Project.GetDrawingIssueManager(_context);
         base.OnParametersSet();
     }
 
@@ -89,6 +122,7 @@
     {
         if (await _nativeFiles.Available())
         {
+            Guard.IsNotNull(Project);
             folder = await _nativeFiles.GetProjectFolder(Project.ProjectId);
         }
         await base.OnParametersSetAsync();
@@ -96,12 +130,20 @@
 
     private async Task SyncFolder()
     {
+        Guard.IsNotNull(folder);
+        Guard.IsNotNull(_manager);
+
         isSyncing = true;
         StateHasChanged();
         IEnumerable<string> drawingFiles = await folder.GetIssuePaths();
-        syncErrors = _manager.PopulateFromFileSystem(drawingFiles);
+        _manager.PopulateFromFileSystem(drawingFiles);
         isSyncing = false;
         StateHasChanged();
+    }
+
+    private async Task OpenDocument(string path)
+    {
+        await _nativeFiles.Open(path);
     }
 
 }

@@ -10,15 +10,15 @@ namespace ProjectManager.Data
     {
         public Guid Id { get; set; }
 
-        public string IssuerId { get; set; }
-        public virtual UserProfile Issuer { get; set; }
+        public string IssuerId { get; set; } = null!;
+        public virtual UserProfile Issuer { get; set; } = null!;
 
         public Guid ProjectId { get; set; }
 
         public DateTime Issued { get; set; }
         public DateTime? Responded { get; set; }
 
-        public bool Won { get; set; }
+        public required bool Won { get; set; }
 
         public decimal TotalFee { get; set; }
 
@@ -29,6 +29,6 @@ namespace ProjectManager.Data
             Responded = null;
         }
 
-        public virtual Project Project { get; set; }
+        public virtual Project Project { get; set; } = null!;
     }
 }
