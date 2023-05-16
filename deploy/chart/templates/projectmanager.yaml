@@ -35,7 +35,7 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-{{ if .Value.ingress.enable }}
+{{ if .Values.ingress.enable }}
 ---
 kind: IngressRoute
 apiVersion: traefik.containo.us/v1alpha1
@@ -54,7 +54,7 @@ spec:
           namespace: default
           port: 80
 {{ end }}
-{{ if .Value.gateway.enable }}
+{{ if .Values.gateway.enable }}
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
