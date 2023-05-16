@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using ProjectManagerContext.Data;
 
 namespace ProjectManager.Data
 {
@@ -16,5 +17,7 @@ namespace ProjectManager.Data
         public virtual UserProfile? LineManager { get; set; }
 
         public virtual IEnumerable<UserProfile> Reports { get; set; }
+
+        public virtual ICollection<Variation> VariationsRaised { get; set; }
     }
 }

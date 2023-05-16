@@ -18,3 +18,11 @@ export async function getprojectfolderpaths(project) {
 export async function writetofile(project, data) {
     return await chrome.webview.hostObjects.projectdocuments.WriteToFile(project, data);
 }
+
+export async function open(path) {
+    return await chrome.webview.hostObjects.projectdocuments.Open(path);
+}
+
+export async function getsubfiles(path) {
+    return await chrome.webview.hostObjects.projectdocuments.GetSubFiles(path);
+}

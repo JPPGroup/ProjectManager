@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManager.Data;
 
@@ -11,9 +12,11 @@ using ProjectManager.Data;
 namespace ProjectManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230120221556_0.4")]
+    partial class _04
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -413,15 +416,8 @@ namespace ProjectManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("IssueDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
@@ -442,19 +438,15 @@ namespace ProjectManager.Migrations
                     b.Property<Guid>("DrawingIssueId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Number")
+                    b.Property<string>("DrawingNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Path")
+                    b.Property<string>("DrawingTitle")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Revision")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -670,7 +662,7 @@ namespace ProjectManager.Migrations
             modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssueEntry", b =>
                 {
                     b.HasOne("ProjectManagerContext.Data.DrawingIssue", "Issue")
-                        .WithMany("Entries")
+                        .WithMany("Drawings")
                         .HasForeignKey("DrawingIssueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -734,7 +726,7 @@ namespace ProjectManager.Migrations
 
             modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssue", b =>
                 {
-                    b.Navigation("Entries");
+                    b.Navigation("Drawings");
                 });
 #pragma warning restore 612, 618
         }

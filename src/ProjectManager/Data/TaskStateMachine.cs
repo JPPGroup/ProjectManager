@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Data.ProjectIntegration;
 
@@ -8,12 +7,12 @@ namespace ProjectManager.Data
     [INotifyPropertyChanged]
     public partial class TaskStateMachine
     {
-        ProjectService _projectService;
-        ApplicationDbContext _context;
-        IHttpContextAccessor _contextAccessor;
+        readonly ProjectService _projectService;
+        readonly ApplicationDbContext _context;
+        readonly IHttpContextAccessor _contextAccessor;
 
         UserProfile? _user;
-        SemaphoreSlim _userLock = new SemaphoreSlim(1);
+        readonly SemaphoreSlim _userLock = new(1);
 
         public IEnumerable<ProjectResponse> UnassignedProjects { get; set; }
         public IEnumerable<ProjectStates> ProjectStates { get; set; }
@@ -47,13 +46,17 @@ namespace ProjectManager.Data
             ProjectStates = new List<ProjectStates>();
             _userTasks = new List<ProjectTask>();
 
+            DailyUserTasks = new List<ProjectTask>();
+            WeeklyUserTasks = new List<ProjectTask>();
+            OtherUserTasks = new List<ProjectTask>();
+
             UserQuotes = new List<Quote>();
         }
 
         public async Task<UserProfile> GetUserAsync(bool nocache = false)
         {
             try
-            {                
+            {
                 await _userLock.WaitAsync();
 
                 if (_user != null && !nocache)
@@ -64,8 +67,9 @@ namespace ProjectManager.Data
                     throw new InvalidOperationException("Username not found");
 
                 return await _context.Users.FirstAsync(u => u.UserName == userName);
-            } finally
-            {                
+            }
+            finally
+            {
                 _userLock.Release();
             }
         }
@@ -73,7 +77,7 @@ namespace ProjectManager.Data
         public UserProfile GetUser(bool nocache = false)
         {
             try
-            {                
+            {
                 _userLock.Wait();
                 if (_user != null && !nocache)
                     return _user;
@@ -83,8 +87,9 @@ namespace ProjectManager.Data
                     throw new InvalidOperationException("Username not found");
 
                 return _context.Users.First(u => u.UserName == userName);
-            } finally
-            {                
+            }
+            finally
+            {
                 _userLock.Release();
             }
         }
@@ -93,8 +98,7 @@ namespace ProjectManager.Data
         {
             await _context.SaveChangesAsync();
 
-            if (_user == null)
-                _user = await GetUserAsync();
+            _user ??= await GetUserAsync();
 
             var results = await _projectService.GetProjects(_user.FirstName, _user.LastName);
             //Is this efficient?
@@ -105,7 +109,7 @@ namespace ProjectManager.Data
             //var unmatchedProjects = await _context.ProjectStates.Where(p => results.All(r => r.Code != p.Project.ProjectId)).ToListAsync();
 
             UnassignedProjects = results.Where(r => ProjectStates.All(ps => r.Code != ps.Project.ProjectId || ps.State == State.Unknown)).ToList();
-            
+
             UserQuotes = _context.Quotes.Where(q => q.IssuerId == _user.Id);
             foreach (Quote quote in UserQuotes)
             {
@@ -115,15 +119,14 @@ namespace ProjectManager.Data
 
         private async Task GenerateTaskList()
         {
-            if (_user == null)
-                _user = await GetUserAsync();
+            _user ??= await GetUserAsync();
 
             _userTasks.Clear();
 
             //TODO: Switch to use project direct
-            foreach(ProjectStates ps in ProjectStates)
+            foreach (ProjectStates ps in ProjectStates)
             {
-                if(ps.State == State.Active)
+                if (ps.State == State.Active)
                     _userTasks.AddRange(ps.Project.Tasks);
             }
 
@@ -135,16 +138,10 @@ namespace ProjectManager.Data
 
         public async Task AddProject(ProjectResponse response, bool sync = true)
         {
-            if (_user == null)
-                _user = await GetUserAsync();
+            _user ??= await GetUserAsync();
 
-            var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == response.Code);
-            if (project == null)
-                project = createNewProject(response);
-
-            var state = project.States.FirstOrDefault(ps => ps.UserId == _user.Id);
-            if (state == null)
-                state = createState(project);
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == response.Code) ?? createNewProject(response);
+            var state = project.States.FirstOrDefault(ps => ps.UserId == _user.Id) ?? createState(project);
 
             state.State = State.Active;
             if (sync)
@@ -156,16 +153,10 @@ namespace ProjectManager.Data
 
         public async Task IgnoreProject(ProjectResponse response, bool sync = true)
         {
-            if (_user == null)
-                _user = await GetUserAsync();
+            _user ??= await GetUserAsync();
 
-            var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == response.Code);
-            if (project == null)
-                project = createNewProject(response);
-
-            var state = project.States.FirstOrDefault(ps => ps.UserId == _user.Id);
-            if (state == null)
-                state = createState(project);
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == response.Code) ?? createNewProject(response);
+            var state = project.States.FirstOrDefault(ps => ps.UserId == _user.Id) ?? createState(project);
 
             state.State = State.Ignored;
             if (sync)
@@ -181,10 +172,10 @@ namespace ProjectManager.Data
             {
                 Id = Guid.NewGuid(),
                 ProjectId = response.Code,
-                Name = response.Name                
+                Name = response.Name
             };
 
-            _context.Projects.Add(project);            
+            _context.Projects.Add(project);
             return project;
         }
 
@@ -201,7 +192,7 @@ namespace ProjectManager.Data
                 State = State.Unknown
             };
 
-            _context.ProjectStates.Add(state);            
+            _context.ProjectStates.Add(state);
             return state;
         }
 
@@ -212,7 +203,7 @@ namespace ProjectManager.Data
 
         public void DiscardChanges()
         {
-            
+
         }
     }
 }

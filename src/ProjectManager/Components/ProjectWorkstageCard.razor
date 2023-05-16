@@ -1,0 +1,28 @@
+﻿@using Blazorise
+@using CommonDataModels
+
+<Card>
+    <CardBody>
+        <CardTitle Size="3">
+            @Workstage.Name
+        </CardTitle>
+        <CardText>
+            <Progress Max="100" ShowValue="false">
+                <!--Invoiced-->
+                <ProgressBar Color="Color.Success" Value="30" />
+                <!--Spent-->
+                <ProgressBar Color="Color.Info" Value="30"/>
+                <!--Invoiced-->
+                <ProgressBar Color="Color.Danger" Value="40"/>
+            </Progress>
+        </CardText>
+        <Button Color="Color.Primary" Margin="Margin.Is2.FromTop">
+            Details <Icon Name="IconName.ArrowRight" />
+        </Button>
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter]
+    public ProjectWorkstage Workstage { get; set; }
+}

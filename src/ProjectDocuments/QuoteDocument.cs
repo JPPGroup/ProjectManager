@@ -82,7 +82,7 @@ namespace ProjectDocuments
         {
         }
 
-        public string GetFilename()
+        public override string GetFilename()
         {
             return $"Q-{ProjectReference}-{Revision} - Fee and Task Schedule.docm";
         }

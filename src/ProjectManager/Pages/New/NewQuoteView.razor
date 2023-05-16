@@ -1,4 +1,5 @@
 ﻿@page "/new/quote"
+@using ProjectManager.Components
 @using ProjectManager.Data
 @using Blazorise
 @using CommonDataModels
@@ -93,12 +94,7 @@
         <StepPanel Name="3">
             Quote Complete!
 
-            @if(!nativeAvailable)
-            {
-                <div>
-                <Button Clicked="Download">Download Now</Button>
-                </div>
-            }            
+            <FileCreationComponent Document="quoteDocument"/>
         </StepPanel>
     </Content>
 </Steps>
@@ -117,7 +113,6 @@
 
 @code {
     private Steps stepsRef;
-    private string email;
     private string selectedStep = "1";
 
     ProjectDetails? projectDetails;
@@ -195,12 +190,6 @@
             quoteDocument.ProjectReference = projectDetails.Code;
             quoteDocument.Title = projectDetails.Name;
         }
-    }
-
-    private async Task Download()
-    {
-        using var streamRef = new DotNetStreamReference(stream: quoteDocument.Save());
-        await JS.InvokeVoidAsync("downloadFileFromStream", quoteDocument.GetFilename(), streamRef);
     }
 
     protected RichTextEdit richTextEditRef;
@@ -291,8 +280,9 @@
                 Issuer = profile,
                 Issued = DateTime.Now,
                 Project = project,
-                TotalFee = 0
-    });
+                TotalFee = 0,
+                Won = false
+        });
         await _context.SaveChangesAsync();
     }
 }

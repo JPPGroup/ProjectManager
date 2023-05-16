@@ -121,4 +121,7 @@
   <data name="F05-12 Fee and Task Schedule JPP" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\F05-12 Fee and Task Schedule JPP.docm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="F11-3 Variation Order Request - VOR" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\F11-3 Variation Order Request - VOR.xlsx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

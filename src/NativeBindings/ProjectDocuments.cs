@@ -1,4 +1,5 @@
 ﻿using ProjectManager.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -70,6 +71,25 @@ namespace NativeBindings
             MemoryStream data = new MemoryStream(Convert.FromBase64String(datastring));
             using var fileStream = File.Open(path, FileMode.CreateNew);
             data.CopyTo(fileStream);
+        }
+
+        public void Open(string path)
+        {
+            if (Directory.Exists(path) || File.Exists(path))
+            {
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    Arguments = "\"" + path + "\"",
+                    FileName = "explorer.exe"
+                };
+                Process.Start(startInfo);
+            }
+        }
+
+        public string[] GetSubFiles(string path)
+        {
+            return Directory.GetFiles(path, "*", SearchOption.AllDirectories);
         }
     }
 }

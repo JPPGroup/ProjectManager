@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManager.Data;
 
@@ -11,16 +12,17 @@ using ProjectManager.Data;
 namespace ProjectManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230110145701_0.3")]
+    partial class _03
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.2")
+                .HasAnnotation("ProductVersion", "6.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("ContactDrawingIssue", b =>
                 {
@@ -70,7 +72,7 @@ namespace ProjectManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -95,7 +97,7 @@ namespace ProjectManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -390,15 +392,7 @@ namespace ProjectManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Position")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -413,15 +407,8 @@ namespace ProjectManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("IssueDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
@@ -442,19 +429,15 @@ namespace ProjectManager.Migrations
                     b.Property<Guid>("DrawingIssueId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Number")
+                    b.Property<string>("DrawingNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Path")
+                    b.Property<string>("DrawingTitle")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Revision")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -463,59 +446,6 @@ namespace ProjectManager.Migrations
                     b.HasIndex("DrawingIssueId");
 
                     b.ToTable("DrawingIssueEntry");
-                });
-
-            modelBuilder.Entity("ProjectManagerContext.Data.Variation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("Accepted")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("AcceptorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Charge")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DateIssued")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Delay")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("OriginatorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RaisedById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Reference")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VariationText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AcceptorId");
-
-                    b.HasIndex("OriginatorId");
-
-                    b.HasIndex("ProjectId");
-
-                    b.HasIndex("RaisedById");
-
-                    b.ToTable("Variations");
                 });
 
             modelBuilder.Entity("ContactDrawingIssue", b =>
@@ -659,7 +589,7 @@ namespace ProjectManager.Migrations
             modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssue", b =>
                 {
                     b.HasOne("ProjectManager.Data.Project", "Project")
-                        .WithMany("DrawingIssues")
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -670,7 +600,7 @@ namespace ProjectManager.Migrations
             modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssueEntry", b =>
                 {
                     b.HasOne("ProjectManagerContext.Data.DrawingIssue", "Issue")
-                        .WithMany("Entries")
+                        .WithMany("Drawings")
                         .HasForeignKey("DrawingIssueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -678,63 +608,21 @@ namespace ProjectManager.Migrations
                     b.Navigation("Issue");
                 });
 
-            modelBuilder.Entity("ProjectManagerContext.Data.Variation", b =>
-                {
-                    b.HasOne("ProjectManagerContext.Data.Contact", "Acceptor")
-                        .WithMany("VariationsAccepted")
-                        .HasForeignKey("AcceptorId");
-
-                    b.HasOne("ProjectManagerContext.Data.Contact", "Originator")
-                        .WithMany("VariationsIssued")
-                        .HasForeignKey("OriginatorId");
-
-                    b.HasOne("ProjectManager.Data.Project", "Project")
-                        .WithMany("Variations")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjectManager.Data.UserProfile", "RaisedBy")
-                        .WithMany("VariationsRaised")
-                        .HasForeignKey("RaisedById");
-
-                    b.Navigation("Acceptor");
-
-                    b.Navigation("Originator");
-
-                    b.Navigation("Project");
-
-                    b.Navigation("RaisedBy");
-                });
-
             modelBuilder.Entity("ProjectManager.Data.Project", b =>
                 {
-                    b.Navigation("DrawingIssues");
-
                     b.Navigation("States");
 
                     b.Navigation("Tasks");
-
-                    b.Navigation("Variations");
                 });
 
             modelBuilder.Entity("ProjectManager.Data.UserProfile", b =>
                 {
                     b.Navigation("Reports");
-
-                    b.Navigation("VariationsRaised");
-                });
-
-            modelBuilder.Entity("ProjectManagerContext.Data.Contact", b =>
-                {
-                    b.Navigation("VariationsAccepted");
-
-                    b.Navigation("VariationsIssued");
                 });
 
             modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssue", b =>
                 {
-                    b.Navigation("Entries");
+                    b.Navigation("Drawings");
                 });
 #pragma warning restore 612, 618
         }

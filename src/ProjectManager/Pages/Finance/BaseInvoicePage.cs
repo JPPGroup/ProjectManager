@@ -1,4 +1,5 @@
 ﻿using CommonDataModels;
+using CommunityToolkit.Diagnostics;
 using Microsoft.AspNetCore.Components;
 using ProjectManager.Data;
 using ProjectManager.Data.ProjectIntegration;
@@ -11,13 +12,13 @@ namespace ProjectManager.Pages.Finance
         [CascadingParameter]
         public TaskStateMachine? TaskState { get; set; }
 
-        protected ConcurrentBag<Invoice> invoices;
-        protected IEnumerable<Invoice> _orderedInvoices;
+        protected ConcurrentBag<Invoice>? invoices;
+        protected IEnumerable<Invoice>? _orderedInvoices;
 
         protected bool loading;
 
         [Inject]
-        ProjectService _projects { get; set; }
+        ProjectService? _projects { get; set; }
 
         protected override void OnInitialized()
         {
@@ -28,18 +29,21 @@ namespace ProjectManager.Pages.Finance
 
         protected async override Task OnParametersSetAsync()
         {
-            LoadUserInvoices();
-            base.OnParametersSetAsync();
+            await LoadUserInvoices();
+            await base.OnParametersSetAsync();
         }
 
         private void UpdateInvoiceList()
         {
+            Guard.IsNotNull(invoices);
             _orderedInvoices = invoices.OrderBy(i => i.DueDate);
             StateHasChanged();
         }
 
         private async Task LoadUserInvoices()
         {
+            Guard.IsNotNull(invoices);
+            Guard.IsNotNull(_projects);
             invoices.Clear();
             loading = true;
             StateHasChanged();
@@ -47,7 +51,6 @@ namespace ProjectManager.Pages.Finance
             await foreach (Invoice i in _projects.GetUnpaidInvoices(GetFilter()))
             {
                 invoices.Add(i);
-                string t = i.DueDate.Value.ToString("d");
                 UpdateInvoiceList();
             }
 

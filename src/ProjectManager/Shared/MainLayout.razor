@@ -8,7 +8,6 @@
 @inject TaskStateMachine _stateMachine;
 @inject NavigationManager _navMan;
 @inject UINotifier _notifier;
-@inject NativeFiles _nativeFiles;
 
 <PageTitle>JPP Project Manager</PageTitle>
 
@@ -34,20 +33,23 @@
                             <BarItem>
                                 <BarLink To="projects">Projects</BarLink>
                             </BarItem>
+                            @if (Flags.TasksEnabled)
+                            {
+                                <BarItem>
+                                    <BarLink To="workplan">Workplan</BarLink>
+                                </BarItem>
+                            }
                             <BarItem>
-                                <BarLink To="workplan">Workplan</BarLink>
-                            </BarItem>
-                            <BarItem>
-                        <BarDropdown>
-                            <BarDropdownToggle>New</BarDropdownToggle>
-                            <BarDropdownMenu>                                
+                                <BarDropdown>
+                                    <BarDropdownToggle>New</BarDropdownToggle>
+                                    <BarDropdownMenu>                                
                                         <BarDropdownItem To="new/project">Project</BarDropdownItem>
                                         <BarDropdownItem To="new/quote">Quote</BarDropdownItem>
                                     
                                                                 
-                            </BarDropdownMenu>
-                        </BarDropdown>
-                    </BarItem>
+                                    </BarDropdownMenu>
+                                </BarDropdown>
+                            </BarItem>
                         </Authorized>
                     </AuthorizeView>
 
@@ -69,7 +71,7 @@
                         </BarDropdown>
                     </BarItem>
                     <BarItem>
-                    <Switch TValue="bool" @bind-Checked="@showReports">Show Reports</Switch>
+                        <Switch TValue="bool" @bind-Checked="@showReports">Show Reports</Switch>
                     </BarItem>
                 </BarStart>
                 <BarEnd>
@@ -83,21 +85,19 @@
             </BarMenu>
         </Bar>
 
-
-
         <article class="content px-4">
             <CascadingValue Value="@_stateMachine">
                 <CascadingValue Value="@showReports">
-                <Alert Color="Color.Success" @bind-Visible="@visible">
-                    <AlertDescription>
-                        For full functionality please install the native version available here
-                    </AlertDescription>
-                    <CloseButton />
-                </Alert>
-                @Body
-                <!--TODO: Review why backdrop isnt working-->
-                <TaskDetailView Visible="taskDetailVisible" OnSaveChanges="SaveChanges" OnDiscardChanges="DiscardChanges" Task="_stateMachine.SelectedTask" />
-            </CascadingValue>
+                    <Alert Color="Color.Success" @bind-Visible="@Flags.NativeFileNotAvailable">
+                            <AlertDescription>
+                                For full functionality please install the native version available here
+                            </AlertDescription>
+                            <CloseButton/>
+                        </Alert>
+                        @Body
+                        <!--TODO: Review why backdrop isnt working-->
+                        <TaskDetailView Visible="taskDetailVisible" OnSaveChanges="SaveChanges" OnDiscardChanges="DiscardChanges" Task="_stateMachine.SelectedTask"/>
+                </CascadingValue>
             </CascadingValue>
             <SnackbarStack @ref="snackbarStack" Location="SnackbarStackLocation.Center" />
         </article>
@@ -107,10 +107,12 @@
 @code {
     private bool taskDetailVisible = false;
     SnackbarStack snackbarStack;
-    bool visible = false;
 
     [Parameter]
     public bool showReports { get; set; } = false;
+
+    [CascadingParameter]
+    public FeatureFlags Flags { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -132,7 +134,7 @@
     {
         if(firstRender)
         {
-            visible = !(await _nativeFiles.Available());
+            await Flags.ScanNative();
             StateHasChanged();
         }
 
