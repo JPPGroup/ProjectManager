@@ -119,7 +119,11 @@ else
             detailTask = _projectService.GetProjectDetails(TaskState.SelectedProject.ProjectId);
             variationTask = _context.Variations.Where(v => v.Project.ProjectId == TaskState.SelectedProject.ProjectId).ToListAsync(); ;
 
-            folder = await folderTask;
+            //TODO: Improve this section with a wait all
+            if (folderTask != null)
+            {
+                folder = await folderTask;
+            }
             _projectDetails = await detailTask;
             _projectVariations = await variationTask;
         }

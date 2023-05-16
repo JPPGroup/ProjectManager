@@ -281,8 +281,9 @@
                 Issuer = profile,
                 Issued = DateTime.Now,
                 Project = project,
-                TotalFee = 0
-    });
+                TotalFee = 0,
+                Won = false
+        });
         await _context.SaveChangesAsync();
     }
 }
