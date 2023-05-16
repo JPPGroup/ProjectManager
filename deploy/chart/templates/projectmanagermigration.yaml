@@ -11,7 +11,9 @@ metadata:
 spec:  
   template:
     metadata:
-      name: {{ .Release.Name }}-projectmanagermigration      
+      name: {{ .Release.Name }}-projectmanagermigration     
+      labels:
+        sidecar.istio.io/inject: "false" 
     spec:
       restartPolicy: Never    
       containers:
