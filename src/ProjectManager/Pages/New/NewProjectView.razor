@@ -186,7 +186,6 @@
 
 @code {
     private Steps stepsRef;
-    private string email;
     private string selectedStep = "1";
 
     private NewProjectModel _model;
@@ -248,9 +247,9 @@
         GeocodeAddress address = await _geocodeService.GetAddress(_siteSearch);
         _model.Address = address.AddressLine;
         _model.PostCode = address.PostalCode;
-        _model.Easting = address.Easting;
-        _model.Northing = address.Northing;
+        _model.Easting = address.Easting.Value;
+        _model.Northing = address.Northing.Value;
                 
-        await PositionMap.SetView(new LatLng(address.Latitude, address.Longitude), 8);
+        await PositionMap.SetView(new LatLng(address.Latitude.Value, address.Longitude.Value), 8);
     }
 }

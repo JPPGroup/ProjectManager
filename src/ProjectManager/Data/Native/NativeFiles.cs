@@ -1,27 +1,27 @@
-﻿using Blazorise;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Connections;
+﻿using CommunityToolkit.Diagnostics;
 using Microsoft.JSInterop;
 
 namespace ProjectManager.Data.Native
 {
     public class NativeFiles
     {
-        IJSObjectReference _module;
-        IJSRuntime _js;
+        IJSObjectReference? _module;
+        readonly IJSRuntime _js;
 
         private bool? _available = null;
 
-        public NativeFiles(IJSRuntime JS)
+        public NativeFiles(IJSRuntime js)
         {
-            _js = JS;
+            _js = js;
         }
 
         private async Task Load()
         {
             _module = await _js.InvokeAsync<IJSObjectReference>("import", "./nativefiles.js");
-        }
 
+            if (_module == null)
+                throw new InvalidOperationException("Unable to load module");
+        }
 
         public async Task<bool> Available()
         {
@@ -31,12 +31,15 @@ namespace ProjectManager.Data.Native
             if (_module == null)
                 await Load();
 
+            Guard.IsNotNull(_module);
             _available = await _module.InvokeAsync<bool>("verify");
             return _available.Value;
         }
 
         public async Task<string[]> GetProjectFolderPaths(string code)
         {
+            Guard.IsNotNull(_module);
+
             try
             {
                 var resp = await _module.InvokeAsync<string[]>("getprojectfolderpaths", code);
@@ -51,15 +54,14 @@ namespace ProjectManager.Data.Native
 
         public async Task<ProjectFolder> GetProjectFolder(string code)
         {
-            ProjectFolder folder = new ProjectFolder(code, this);
-            folder.Paths = await GetProjectFolderPaths(code);
-            //TODO: Replace with a better system to determine
-            folder.PrimaryPath = folder.Paths[0];
-            return folder;
+            var result = await GetProjectFolderPaths(code);
+            return new ProjectFolder(code, this, result);
         }
 
         public async Task WriteToFile(string path, MemoryStream data)
         {
+            Guard.IsNotNull(_module);
+
             try
             {
                 string datastring = Convert.ToBase64String(data.ToArray());
@@ -74,6 +76,7 @@ namespace ProjectManager.Data.Native
 
         public async Task Open(string path)
         {
+            Guard.IsNotNull(_module);
             await _module.InvokeVoidAsync("open", path);
         }
 
@@ -81,6 +84,7 @@ namespace ProjectManager.Data.Native
         {
             try
             {
+                Guard.IsNotNull(_module);
                 var resp = await _module.InvokeAsync<string[]>("getsubfiles", path);
                 return resp;
             }

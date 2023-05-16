@@ -1,8 +1,7 @@
-﻿using System.Globalization;
-using System.Text.RegularExpressions;
-using Microsoft.IdentityModel.Xml;
-using ProjectDocuments;
+﻿using ProjectDocuments;
 using ProjectManagerContext.Data;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace ProjectManager.Data
 {
@@ -26,7 +25,7 @@ namespace ProjectManager.Data
             Issue = new Dictionary<string, DrawingIssue>();
             _project = project;
             _context = context;
-            Errors  = new List<string>();
+            Errors = new List<string>();
         }
 
         public void PopulateFromCache()
@@ -63,7 +62,7 @@ namespace ProjectManager.Data
                     if (Path.GetFileNameWithoutExtension(file).Contains("Drawing Register"))
                         continue;
 
-                    DwgName name = null;
+                    DwgName? name = null;
 
                     foreach (IDwgNamingConvention convention in nameSchemes)
                     {
@@ -96,7 +95,7 @@ namespace ProjectManager.Data
                                     Date = DateTime.ParseExact(date, "yyMMdd", CultureInfo.InvariantCulture),
                                     Name = issuename
                                 });
-                                
+
                             }
 
                             Issue[issuename].SetEntry(name.Number, name.Revision, file, name.Name);

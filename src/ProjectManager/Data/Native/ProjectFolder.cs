@@ -9,10 +9,13 @@
 
         private NativeFiles _bridge;
 
-        public ProjectFolder(string projectCode, NativeFiles bridge)
+        public ProjectFolder(string projectCode, NativeFiles bridge, string[] paths)
         {
             ProjectCode = projectCode;
             _bridge = bridge;
+            Paths = paths;
+            //TODO: Replace with a better system to determine
+            PrimaryPath = Paths[0];
         }
 
         public async Task PersistQuoteDocument(string filename, MemoryStream data)
