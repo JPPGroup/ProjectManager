@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: "0.1"
+appVersion: "0.2"
 description: Project manager deployment
 name: jppprojectmanager
-version: 0.2.2
+version: 0.3.0
 

@@ -1,8 +1,7 @@
 projectmanager:
-  imageVersion: 0.1.4  
+  imageVersion: 0.2.0 
   databaseaddress: "localhost"
   prefix: "/projectmanager"
-  
 
 global:
   postgresql:
@@ -10,4 +9,10 @@ global:
       username: aspnetuser      
       database: aspnet-ProjectManager
       password: ""
+
+ingress:
+  enable: false
+
+gateway:
+  enable: false
   

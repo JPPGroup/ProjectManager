@@ -35,6 +35,7 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
+{{ if .Value.ingress.enable }}
 ---
 kind: IngressRoute
 apiVersion: traefik.containo.us/v1alpha1
@@ -52,4 +53,28 @@ spec:
           name: {{ .Release.Name }}-projectmanager
           namespace: default
           port: 80
+{{ end }}
+{{ if .Value.gateway.enable }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: projectroute
+  namespace: default
+spec:
+  parentRefs:
+  - name: main-gateway
+    sectionName: httpin
+    namespace: istio-system
+  hostnames:
+  - "services.cedarbarn.local"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: {{ .Values.projectmanager.prefix }}
+    backendRefs:
+    - name: {{ .Release.Name }}-projectmanager
+      port: 80
+{{ end }}
           
