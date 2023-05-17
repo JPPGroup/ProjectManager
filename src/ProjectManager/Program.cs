@@ -2,18 +2,14 @@ using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using Blazorise.RichTextEdit;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Areas.Identity;
 using ProjectManager.Data;
 using ProjectManager.Data.Native;
 using ProjectManager.Data.ProjectIntegration;
-using System.Security.Claims;
+using Serilog;
 
 namespace Company.WebApplication1
 {
@@ -77,6 +73,16 @@ namespace Company.WebApplication1
             });
 
             builder.Services.AddBlazoriseRichTextEdit();
+
+            string apiKey = builder.Configuration["Logging:ApiKey"];
+            string ingestAddress = builder.Configuration["Logging:IngestUrl"];
+            var serilog = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .MinimumLevel.Verbose()
+                .WriteTo.Seq(ingestAddress, apiKey: apiKey)
+                .CreateLogger();
+
+            builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(serilog));
 
 
             var app = builder.Build();
