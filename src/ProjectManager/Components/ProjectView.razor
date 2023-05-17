@@ -26,6 +26,7 @@
 
     <Buttons Role="ButtonsRole.Toolbar">
         <Buttons>
+            <Button Color="Color.Primary" Type="ButtonType.Link" To="@deltekLink" Target="Target.Blank">Open Deltek</Button>
             @if (folder != null)
             {
                 <Button Color="Color.Primary" Clicked="() => folder.OpenFolder()">Open Folder</Button>
@@ -36,7 +37,7 @@
 
     <Heading Size="HeadingSize.Is4">Workstages</Heading>
 
-    <CardDeck>
+    <CardDeck Class="row-cols-md-5">
         @foreach (ProjectWorkstage workstage in _projectDetails.Workstages)
         {
             <ProjectWorkstageCard Workstage="workstage" />
@@ -113,6 +114,11 @@ else
     private ProjectDetails? _projectDetails;
 
     private IEnumerable<Variation> _projectVariations;
+
+    string deltekLink
+    {
+        get { return $"https://deltekpim.jppuk.net/XWeb/entity/entity.aspx?ec=3&code={_projectDetails.DeltekId}"; }
+    }
 
     protected async override Task OnParametersSetAsync()
     {
