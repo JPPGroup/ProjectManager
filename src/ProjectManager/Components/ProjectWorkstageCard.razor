@@ -8,14 +8,7 @@
         </CardTitle>
         <CardText>
             <div>
-            <Progress Max="@maxValue" ShowValue="false">
-                <!--Invoiced-->
-                    <ProgressBar Color="Color.Success" Value="@invoice" Max="@maxValue" />
-                <!--Spent-->
-                    <ProgressBar Color="Color.Info" Value="@unbilled" Max="@maxValue" />
-                <!--Invoiced-->
-                    <ProgressBar Color="Color.Danger" Value="@overspend" Max="@maxValue" />
-            </Progress>
+                <FinanceSummaryBar Costs="@Workstage.Costs" Fee="Workstage.TotalFee" Invoiced="Workstage.Invoiced"/>
             </div>
             @if (unbilled > 0)
                 {

@@ -1,7 +1,90 @@
 ﻿@page "/finance/wip"
+@using Blazorise
+@using ProjectManager.Data
+@using CommonDataModels
+@using System.Collections.Concurrent
+@using ProjectManager.Data.ProjectIntegration
+@using ProjectManager.Components
+@inject ProjectService _projects
 
 <h3>Wip</h3>
 
-@code {
+<Table>
+    <TableHeader>
+        <TableRow>
+            <TableHeaderCell>Code</TableHeaderCell>
+            <TableHeaderCell>Name</TableHeaderCell>
+            <TableHeaderCell>Summary</TableHeaderCell>
+            <TableHeaderCell>Invoiced</TableHeaderCell>
+            <TableHeaderCell>Fee</TableHeaderCell>
+            <TableHeaderCell>Potential Remaining</TableHeaderCell>
+        </TableRow>
+    </TableHeader>
+    <TableBody>
+        @foreach (ProjectDetails details in _orderedDetails)
+        {
+            <TableRow>
+                <TableRowHeader>@details.Code</TableRowHeader>
+                <TableRowCell>@details.Name</TableRowCell>
+                <TableRowCell>
+                    <FinanceSummaryBar Fee="@details.TotalFee" Costs="@details.TotalCosts" Invoiced="@details.TotalInvoiced" />
+                </TableRowCell>
+                <TableRowCell>£@details.TotalInvoiced.Value.ToString("0.00")</TableRowCell>
+                <TableRowCell>£@details.TotalFee.Value.ToString("0.00")</TableRowCell>
+                <TableRowCell>£@((details.TotalFee - details.TotalInvoiced).Value.ToString("0.00"))</TableRowCell>
+            </TableRow>
+        }
+    </TableBody>
+</Table>
 
+@code {
+    [CascadingParameter]
+    public TaskStateMachine? TaskState { get; set; }
+
+    private ConcurrentBag<ProjectDetails> details;
+    private IEnumerable<ProjectDetails> _orderedDetails;
+    private bool loading = false;
+
+    protected override void OnInitialized()
+    {
+        details = new ConcurrentBag<ProjectDetails>();
+        _orderedDetails = new List<ProjectDetails>();
+        base.OnInitialized();
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        LoadUserProjects();
+        await base.OnParametersSetAsync();
+    }
+
+    private void UpdateInvoiceList()
+    {
+        _orderedDetails = details.OrderByDescending(pd => pd.TotalFee - pd.TotalInvoiced);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool loadRunning = false;
+
+    private async Task LoadUserProjects()
+    {
+        if (!loadRunning)
+        {
+            loadRunning = true;
+            details.Clear();
+            await Parallel.ForEachAsync(TaskState.ProjectStates, async (p, token) =>
+            {
+                if (p.State != State.Ignored)
+                {
+                    ProjectDetails pd = await _projects.GetProjectDetails(p.Project.ProjectId);
+                    if (pd.TotalInvoiced < pd.TotalFee)
+                    {
+                        details.Add(pd);
+                        UpdateInvoiceList();
+                    }
+                }
+            });
+            loadRunning = false;
+        }
+    }
 }

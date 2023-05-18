@@ -1,0 +1,48 @@
+﻿@using Blazorise
+
+<Progress Max="@maxValue" ShowValue="false">
+    <!--Invoiced-->
+    <ProgressBar Color="Color.Success" Value="@invoice" Max="@maxValue" />
+    <!--Spent-->
+    <ProgressBar Color="Color.Info" Value="@unbilled" Max="@maxValue" />
+    <!--Invoiced-->
+    <ProgressBar Color="Color.Danger" Value="@overspend" Max="@maxValue" />
+</Progress>
+
+@code {
+    
+    [Parameter]
+    public decimal? Costs { get; set; }
+
+    [Parameter]
+    public decimal? Invoiced { get; set; }
+
+    [Parameter]
+    public decimal? Fee { get; set; }
+
+
+    int maxValue
+    {
+        get { return (int)Math.Max(Costs.Value, Fee.Value); }
+    }
+
+    int unbilled
+    {
+        get
+        {
+            decimal unbilledCap = Math.Min(Costs.Value, Fee.Value);
+            decimal val = unbilledCap - Invoiced.Value;
+            return (int)Math.Max(val, 0);
+        }
+    }
+
+    int overspend
+    {
+        get { return (int)Math.Max(Costs.Value - Fee.Value, 0); }
+    }
+
+    int invoice
+    {
+        get { return (int)Invoiced.Value; }
+    }
+}
