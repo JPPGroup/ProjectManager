@@ -6,11 +6,15 @@
 @using ProjectManager.Data.ProjectIntegration
 @using ProjectManager.Components
 @inject ProjectService _projects
+@inject ILogger<Wip> _logger
 
-<h3>Wip</h3>
-
-<Table>
-    <TableHeader>
+<h3>Work in Progress Projects</h3>
+@if (processedCount != totalCount || loadRunning)
+{
+    <Progress Value="@processedCount" Max="@totalCount" Animated Striped/>
+}
+<Table FixedHeader FixedHeaderTableHeight="750px" FixedHeaderTableMaxHeight="750px">
+    <TableHeader >
         <TableRow>
             <TableHeaderCell>Code</TableHeaderCell>
             <TableHeaderCell>Name</TableHeaderCell>
@@ -66,22 +70,39 @@
 
     private bool loadRunning = false;
 
+    private int processedCount = 0;
+    private int totalCount = 0;
+    public object progressLock = new object();
+
     private async Task LoadUserProjects()
     {
         if (!loadRunning)
         {
             loadRunning = true;
             details.Clear();
+            totalCount = TaskState.ProjectStates.Count();
             await Parallel.ForEachAsync(TaskState.ProjectStates, async (p, token) =>
             {
                 if (p.State != State.Ignored)
                 {
-                    ProjectDetails pd = await _projects.GetProjectDetails(p.Project.ProjectId);
-                    if (pd.TotalInvoiced < pd.TotalFee)
+                    ProjectDetails? pd = await _projects.GetProjectDetails(p.Project.ProjectId);
+
+                    if (pd is null)
                     {
-                        details.Add(pd);
-                        UpdateInvoiceList();
+                        _logger.LogError("Project details for {0} was null", p.Project.ProjectId);
                     }
+                    else
+                    {
+                        if (pd.TotalInvoiced < pd.TotalFee)
+                        {
+                            details.Add(pd);
+                            UpdateInvoiceList();
+                        }
+                    }
+                }
+                lock (progressLock)
+                {
+                    processedCount++;
                 }
             });
             loadRunning = false;
