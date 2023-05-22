@@ -18,8 +18,13 @@
                     <Heading Size="HeadingSize.Is2">
                         New Projects
                         <Badge Color="Color.Secondary" Pill Style="font-size:.5em;">@TaskState.UnassignedProjects.Count()</Badge>
-                        <Button Color="Color.Secondary" Pill Style="font-size:.3em;" Clicked="async () => await IgnoreAll()"><Icon Name="IconName.Times" aria-label="Clear All" /> Clear</Button>
                     </Heading>
+                    <Buttons Role="ButtonsRole.Toolbar">
+                        <Buttons>
+                            <Button Color="Color.Primary" Clicked="async () => await AddAll()">Add All</Button>
+                            <Button Color="Color.Primary" Clicked="async () => await IgnoreAll()">Ignore All</Button>
+                        </Buttons>
+                    </Buttons>
                     <ListGroup Class="list-group-flush" Style="min-height:350px;max-height: 350px;overflow: auto">
                         @foreach (ProjectResponse pr in TaskState.UnassignedProjects)
                         {
@@ -81,6 +86,20 @@ else
         await TaskState.SyncProjects();
 
         await base.OnInitializedAsync();
+    }
+
+    private async Task AddAll()
+    {
+        if (TaskState == null)
+            throw new InvalidOperationException("Task state null");
+
+        foreach (ProjectResponse projectResponse in TaskState.UnassignedProjects)
+        {
+            await TaskState.AddProject(projectResponse, false);
+        }
+        await TaskState.SyncProjects();
+        StateHasChanged();
+
     }
 
     private async Task IgnoreAll()

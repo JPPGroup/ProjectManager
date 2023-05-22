@@ -1,8 +1,13 @@
-﻿<CascadingAuthenticationState>
+﻿@using Blazorise
+@using ProjectManager.Data
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            <CascadingValue Value="@Flags">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
+            <Blazorise.ModalProvider Centered="true" Size="ModalSize.Fullscreen"/>
+            </CascadingValue>
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>
@@ -12,3 +17,10 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code
+{
+    [Inject]
+    FeatureFlags Flags { get; set; }
+}
+

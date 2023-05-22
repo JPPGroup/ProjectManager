@@ -1,0 +1,255 @@
+﻿@page "/new/project"
+@using Blazorise
+@using CommonDataModels.Inputs
+@using Darnton.Blazor.Leaflet.LeafletMap
+@using ProjectManager.Data
+@using ProjectManager.Data.Native
+@inject GeocodeService _geocodeService
+@inject NativeFiles _native
+
+<Steps @ref="stepsRef" @bind-SelectedStep="selectedStep" NavigationAllowed="NavigationAllowed">
+    <Items>
+        <Step Name="1">Details</Step>
+        <Step Name="2">Location</Step>
+        <Step Name="3">Contacts</Step>
+        <Step Name="4">
+            <Marker>
+                <Icon Name="IconName.Server" />
+            </Marker>
+            <Caption>
+                Setup
+            </Caption>
+        </Step>
+        <!--<Step Name="5">
+            <Marker>
+                <Icon Name="IconName.MoneyBillAlt" />
+            </Marker>
+            <Caption>
+                Credit
+            </Caption>
+        </Step>-->
+        <Step Name="6">
+            <Marker>
+                <Icon Name="IconName.Flag" />
+            </Marker>
+            <Caption>
+                Complete
+            </Caption>
+        </Step>
+    </Items>
+    <Content>
+        <StepPanel Name="1">
+            <Validations Mode="ValidationMode.Auto" Model="@_model" ValidateOnLoad="false" @ref="_validator">
+                <Validation>
+                    <Field Horizontal>
+                        <FieldLabel ColumnSize="ColumnSize.Is3">Name</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is9">
+                            <TextEdit @bind-Text="@_model.Name" />
+                        </FieldBody>
+                        <FieldHelp>Project name used on server and for emails</FieldHelp>
+                    </Field>
+                </Validation>
+                <Validation>
+                    <Field Horizontal>
+                        <FieldLabel ColumnSize="ColumnSize.Is3">Client</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is9">
+                            <TextEdit @bind-Text="@_model.Client" />
+                        </FieldBody>
+                        <FieldHelp>Appointing client for the project</FieldHelp>
+                    </Field>
+                </Validation>
+                <Validation>
+                    <Field Horizontal>
+                        <FieldLabel ColumnSize="ColumnSize.Is3">Description</FieldLabel>
+                        <FieldBody ColumnSize="ColumnSize.Is9">
+                            <TextEdit @bind-Text="@_model.Description" />
+                        </FieldBody>
+                        <FieldHelp>A clear description is very useful in helping someone unfamiliar with the project to understand its general scope, and for searching for similar project types in the future. Include all relevant information, e.g. "Four storey apartment block, including car park with drainage and external levels design.", or "Temporary works facade restraint during demolition works."</FieldHelp>
+                    </Field>
+                </Validation>
+                <Validation>
+                    <Fields>
+                        <Field Horizontal ColumnSize="ColumnSize.Is6">
+                            <FieldLabel>Status</FieldLabel>
+                            <FieldBody>
+                                <Select @bind-SelectedValue="@_model.Status">
+                                    <SelectItem Value="NewProjectStatus.Enquiry">Enquiry</SelectItem>
+                                    <SelectItem Value="NewProjectStatus.Live">Live</SelectItem>
+                                </Select>
+                            </FieldBody>
+                            <FieldHelp>Project status</FieldHelp>
+                        </Field>
+                        <Field Horizontal ColumnSize="ColumnSize.Is6">
+                            <FieldLabel>Source</FieldLabel>
+                            <FieldBody>
+                                <Select @bind-SelectedValue="@_model.Source">
+                                    <SelectItem Value="NewProjectSource.New">New Client</SelectItem>
+                                    <SelectItem Value="NewProjectSource.Repeat">Repeat Client</SelectItem>
+                                    <SelectItem Value="NewProjectSource.InternalCompany">Internal Referral</SelectItem>
+                                    <SelectItem Value="NewProjectSource.ExternalCompany">External Referral</SelectItem>
+                                </Select>
+                            </FieldBody>
+                            <FieldHelp>Project status</FieldHelp>
+                        </Field>
+                    </Fields>
+                </Validation>
+                <Blazorise.ValidationSummary Label="Following error occurs..." />
+            </Validations>
+        </StepPanel>
+        <StepPanel Name="2">
+            <Field>
+                <FieldLabel>Site Address</FieldLabel>
+                <TextEdit @bind-Text="_siteSearch">
+                    <FieldHelp>Please enter site address</FieldHelp>
+                </TextEdit>
+                <Button Clicked="SearchAddress">Search</Button>
+            </Field>
+            <div class="container">
+                <div class="row">
+                    <div class="col-4">
+                        <LeafletMap Map="PositionMap" TileLayer="OpenStreetMapsTileLayer" />
+                    </div>
+                    <div class="col-8">
+                        <Field Horizontal>
+                            <FieldLabel ColumnSize="ColumnSize.Is3">Address</FieldLabel>
+                            <FieldBody ColumnSize="ColumnSize.Is9" >
+                                <TextEdit Disabled @bind-Text="_model.Address" />
+                            </FieldBody>
+                        </Field>
+                        <Field Horizontal>
+                            <FieldLabel ColumnSize="ColumnSize.Is3">Post Code</FieldLabel>
+                            <FieldBody ColumnSize="ColumnSize.Is9" >
+                                <TextEdit Disabled @bind-Text="_model.PostCode" />
+                            </FieldBody>
+                        </Field>
+                        <Fields>
+                            <Field >
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Easting</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <NumericEdit Disabled @bind-Value="_model.Easting" />
+                                </FieldBody>
+                            </Field>
+                            <Field >
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Northing</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <NumericEdit Disabled @bind-Value="_model.Northing" />
+                                </FieldBody>
+                            </Field>
+                        </Fields>
+                        <Fields>
+                            <Field>
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Region</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <NumericEdit Disabled @bind-Value="_model.Region" />
+                                </FieldBody>
+                            </Field>
+                            <Field>
+                                <FieldLabel ColumnSize="ColumnSize.Is3">Sub Region</FieldLabel>
+                                <FieldBody ColumnSize="ColumnSize.Is9">
+                                    <NumericEdit Disabled @bind-Value="_model.SubRegion" />
+                                </FieldBody>
+                            </Field>
+                        </Fields>
+                    </div>
+                </div>
+            </div>
+        </StepPanel>
+        <StepPanel Name="3">
+            Contacts
+        </StepPanel>
+        <StepPanel Name="4">
+            <Heading Size="HeadingSize.Is3">Creating Job Folders...</Heading>
+            <!--@if(! (await _native.Available()))
+            {
+                <p>Unable to access file system from web browser to automaticaly create folders. Please install native version from TBC</p>
+            }-->
+        </StepPanel>
+        <!--<StepPanel Name="5">
+            <Heading Size="HeadingSize.Is3">Checking Client Credit...</Heading>
+        </StepPanel>-->
+        <StepPanel Name="6">
+            <Heading Size="HeadingSize.Is3">Job Created</Heading>
+            Open
+            <NavLink href="new/quote">Create new quote</NavLink>
+        </StepPanel>
+    </Content>
+</Steps>
+
+<Div Display="Display.Flex" Class="justify-content-right">
+    <Button Color="Color.Secondary" Margin="Margin.Is2.FromEnd" Clicked="() => stepsRef.PreviousStep()">
+        Previous
+    </Button>
+    <Button Color="Color.Primary" Clicked="() => stepsRef.NextStep()">
+        Next
+    </Button>
+</Div>
+
+@code {
+    private Steps stepsRef;
+    private string selectedStep = "1";
+
+    private NewProjectModel _model;
+    private Validations _validator;
+
+    private string _siteSearch;
+
+    public NewProjectView()
+    {
+        _model = new NewProjectModel();
+
+        PositionMap = new Map("testMap", new MapOptions
+            {
+                Center = new LatLng(51.5072, 0.1276),
+                Zoom = 4
+            });
+        OpenStreetMapsTileLayer = new TileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            new TileLayerOptions
+                {
+                    Attribution = @"Map data © <a href=""https://www.openstreetmap.org/"">OpenStreetMap</a> contributors, " +
+                                @"<a href=""https://creativecommons.org/licenses/by-sa/2.0/"">CC-BY-SA</a>"
+                }
+        );
+    }
+
+    protected Map PositionMap;
+    protected TileLayer OpenStreetMapsTileLayer;
+
+    public async ValueTask DisposeAsync()
+    {
+        await OpenStreetMapsTileLayer.DisposeAsync();
+        await PositionMap.DisposeAsync();
+    }
+
+    private bool NavigationAllowed(StepNavigationContext context)
+    {
+        bool valid = true;
+        if (_validator != null)
+        {
+            valid = _validator.ValidateAll().Result;
+        }
+
+        if (context.CurrentStepIndex == 2 && context.NextStepIndex > 2 && string.IsNullOrEmpty(_model.PostCode))
+        {
+            return false;
+        }
+
+        if (context.CurrentStepIndex == 1 && context.NextStepIndex > 1 && !valid)
+        {
+            return false;
+        }        
+
+        return true;
+    }
+
+    private async Task SearchAddress()
+    {
+        GeocodeAddress address = await _geocodeService.GetAddress(_siteSearch);
+        _model.Address = address.AddressLine;
+        _model.PostCode = address.PostalCode;
+        _model.Easting = address.Easting.Value;
+        _model.Northing = address.Northing.Value;
+                
+        await PositionMap.SetView(new LatLng(address.Latitude.Value, address.Longitude.Value), 8);
+    }
+}

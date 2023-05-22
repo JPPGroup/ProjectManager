@@ -1,0 +1,58 @@
+﻿@using Blazorise
+@using CommonDataModels
+
+<Card>
+    <CardBody>
+        <CardTitle Size="4">
+            @Workstage.Name
+        </CardTitle>
+        <CardText>
+            <div>
+                <FinanceSummaryBar Costs="@Workstage.Costs" Fee="Workstage.TotalFee" Invoiced="Workstage.Invoiced"/>
+            </div>
+            @if (unbilled > 0)
+                {
+                <div>£@(Workstage.Invoiced.Value.ToString("0.00")) of £@(Workstage.TotalFee.Value.ToString("0.00")) invoiced</div>
+                }
+                @if (overspend > 0)
+                {
+                <div>£@(overspend) over budget</div>
+                }
+            
+        </CardText>
+        <!--<Button Color="Color.Primary" Margin="Margin.Is2.FromTop">
+            Details <Icon Name="IconName.ArrowRight" />
+        </Button>-->
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter]
+    public ProjectWorkstage Workstage { get; set; }
+
+    int maxValue
+    {
+        get { return (int)Math.Max(Workstage.Costs.Value, Workstage.TotalFee.Value); }
+    }
+
+    int unbilled
+    {
+        get
+        {
+            decimal unbilledCap = Math.Min(Workstage.Costs.Value, Workstage.TotalFee.Value);
+            decimal val = unbilledCap - Workstage.Invoiced.Value;
+            return (int)Math.Max(val, 0);
+        }
+    }
+
+    int overspend
+    {
+        get { return (int)Math.Max(Workstage.Costs.Value - Workstage.TotalFee.Value, 0); }
+    }
+
+    int invoice
+    {
+        get { return (int)Workstage.Invoiced.Value; }
+    }
+
+}

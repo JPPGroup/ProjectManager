@@ -1,12 +1,29 @@
-﻿<AuthorizeView>
+﻿@using Blazorise
+
+<AuthorizeView>
     <Authorized>
-        <a href="Identity/Account/Manage">Hello, @context.User.Identity?.Name!</a>
-        <form method="post" action="Identity/Account/LogOut">
-            <button type="submit" class="nav-link btn btn-link">Log out</button>
-        </form>
+        <BarItem>
+            <BarDropdown>
+                <BarDropdownToggle>@context.User.Identity?.Name</BarDropdownToggle>
+                <BarDropdownMenu>
+                    <BarDropdownItem To="settings">Settings</BarDropdownItem>
+                    <BarDropdownDivider />
+                    <BarDropdownItem To="Identity/Account/Manage">Profile</BarDropdownItem>
+                    <BarDropdownItem>
+                        <form method="post" action="Identity/Account/LogOut">
+                            <button type="submit" class="nav-link btn btn-link">Log out</button>
+                        </form>
+                    </BarDropdownItem>
+                </BarDropdownMenu>
+            </BarDropdown>
+        </BarItem>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="Identity/Account/Login">Log in</a>
+        <BarItem>
+            <span><a href="Identity/Account/Register">Register</a></span>
+        </BarItem>
+        <BarItem>
+            <span><a href="Identity/Account/Login">Log in</a></span>
+        </BarItem>
     </NotAuthorized>
 </AuthorizeView>

@@ -1,0 +1,53 @@
+﻿@using Data
+@using Blazorise
+@using System.Text
+@using CommunityToolkit.Diagnostics
+
+@if (TaskState != null && TaskState.UserQuotes.Any())
+{
+    <Accordion>
+        <Collapse Visible="@collapseVisible">
+            <CollapseHeader>
+                <Heading Size="HeadingSize.Is5">
+                    <Button Clicked="@(()=>collapseVisible = !collapseVisible)">@TaskState.UserQuotes.Count() outstanding quotes</Button>
+                </Heading>
+            </CollapseHeader>
+            <CollapseBody>
+                @foreach (Quote q in TaskState.UserQuotes)
+                {
+                    if (!q.Responded.HasValue)
+                    {
+                        <div>
+                            <div>
+                            @GenerateSummary(q)
+                            </div>
+                            <Button Color="Color.Success" Clicked="async () => await Accept(q, true)">Accept</Button>
+                            <Button Color="Color.Danger" Clicked="async () => await Accept(q, false)">Reject</Button>
+                        </div>
+                    }
+                }
+            </CollapseBody>
+        </Collapse>
+    </Accordion>
+}
+
+@code {
+    [CascadingParameter]
+    public TaskStateMachine? TaskState { get; set; }
+
+    bool collapseVisible = false;
+
+    private string GenerateSummary(Quote q)
+    {
+        return $"{q.Project.Name} was quoted at £{q.TotalFee} by {q.Issuer.FirstName} {q.Issuer.LastName} on {q.Issued.ToShortDateString()}";
+    }
+
+    private async Task Accept(Quote q, bool accepted)
+    {
+        Guard.IsNotNull(TaskState);
+
+        q.Responded = DateTime.Now;
+        q.Won = accepted;
+        await TaskState.SaveChangesAsync();
+    }
+}

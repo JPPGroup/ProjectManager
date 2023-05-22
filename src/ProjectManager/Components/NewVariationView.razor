@@ -1,0 +1,117 @@
+﻿@using ProjectManager.Data
+@using Blazorise
+@using ProjectDocuments
+@using ProjectManagerContext.Data
+@inject ApplicationDbContext _context;
+@inject IModalService _modal;
+
+<ModalHeader>
+    <ModalTitle>New Variation Order Request</ModalTitle>
+    <CloseButton />
+</ModalHeader>
+<ModalBody>
+    <Heading Size="HeadingSize.Is4">Details</Heading>
+    <Field Horizontal>
+        <FieldLabel ColumnSize="ColumnSize.Is2">Reference</FieldLabel>
+        <FieldBody ColumnSize="ColumnSize.Is10" Margin="Margin.IsAuto">
+            <TextEdit @bind-Text="@newVariation.Reference" />
+        </FieldBody>
+    </Field>
+    <Field Horizontal>
+        <FieldLabel ColumnSize="ColumnSize.Is2">Issue Date</FieldLabel>
+        <FieldBody ColumnSize="ColumnSize.Is10" Margin="Margin.IsAuto">
+            <DateEdit TValue="DateTime?" @bind-Date="@newVariation.DateIssued" />
+        </FieldBody>
+    </Field>
+    <Field>
+        <FieldLabel>Text</FieldLabel>
+        <FieldBody>
+            <TextEdit Size="Size.Large" @bind-Text="@newVariation.VariationText" />
+        </FieldBody>
+    </Field>
+    <Field Horizontal>
+        <FieldLabel ColumnSize="ColumnSize.Is2">Cost</FieldLabel>
+        <FieldBody ColumnSize="ColumnSize.Is10" Margin="Margin.IsAuto">
+            <TextEdit @bind-Text="@newVariation.Charge" />
+        </FieldBody>
+    </Field>
+    <Field Horizontal>
+        <FieldLabel ColumnSize="ColumnSize.Is2">Delay</FieldLabel>
+        <FieldBody ColumnSize="ColumnSize.Is10" Margin="Margin.IsAuto">
+            <TextEdit @bind-Text="@newVariation.Delay" />
+        </FieldBody>
+    </Field>
+
+    <Heading Size="HeadingSize.Is4">Project Information</Heading>
+    @if (newVariation.Project != null)
+    {
+        <Field Horizontal>
+            <FieldLabel ColumnSize="ColumnSize.Is2">Project Reference</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is10" Margin="Margin.IsAuto">
+                <TextEdit @bind-Text="@newVariation.Project.ProjectId" ReadOnly />
+            </FieldBody>
+        </Field>
+        <Field Horizontal>
+            <FieldLabel ColumnSize="ColumnSize.Is2">Project Title</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is10" Margin="Margin.IsAuto">
+                <TextEdit @bind-Text="@newVariation.Project.Name" ReadOnly />
+            </FieldBody>
+        </Field>
+        <Field Horizontal>
+            <FieldLabel ColumnSize="ColumnSize.Is2">Project Client</FieldLabel>
+            <FieldBody ColumnSize="ColumnSize.Is10" Margin="Margin.IsAuto">
+                <!--<TextEdit @bind-Text="@newVariation.Project." ReadOnly />-->
+            </FieldBody>
+        </Field>
+    }
+
+    <Heading Size="HeadingSize.Is4">Client Information</Heading>
+
+</ModalBody>
+<ModalFooter>
+    <FileCreationComponent Document="variationDoc" OnBeforeSave="Create" OnAfterSave="Submit" />
+</ModalFooter>
+
+
+@code {
+
+    [Parameter]
+    public Project? Project { get; set; }
+
+    VariationOrderRequestDocument variationDoc;
+    Variation newVariation;
+
+    protected override void OnInitialized()
+    {
+        variationDoc = VariationOrderRequestDocument.NewVOR();
+        newVariation = new Variation();
+        newVariation.DateIssued = DateTime.Now;
+    }
+
+    protected override void OnParametersSet()
+    {
+        newVariation.Project = Project;
+
+        base.OnParametersSet();
+    }
+
+    public void Create()
+    {
+        variationDoc.Reference = newVariation.Reference;
+        variationDoc.Project = Project.Name;
+        variationDoc.ProjectReference = Project.ProjectId;
+        variationDoc.Date = DateTime.Now.ToShortDateString();
+    //variationDoc.Client = newVariation.Project.Client;
+        variationDoc.Delay = newVariation.Delay;
+        variationDoc.Cost = newVariation.Charge;
+        variationDoc.Text = newVariation.VariationText;
+    }
+
+    public async void Submit()
+    {
+        _context.Variations.Add(newVariation);
+        await _context.SaveChangesAsync();
+        await _modal.Hide();
+    }
+
+}

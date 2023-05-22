@@ -1,6 +1,5 @@
 ﻿@page "/"
 @using Blazorise
-@using Blazorise.Components
 @using ProjectManager.Data
 @using ProjectManager.Data.ProjectIntegration
 @inject ProjectService _projects
@@ -8,36 +7,40 @@
 <PageTitle>Project Manager</PageTitle>
 
 <AuthorizeView>
-                                    <Authorized>
-@if (TaskState != null && _user != null)
-{
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-6">
-                <Heading Size="HeadingSize.Is2">
-                    Welcome @_user.FirstName @_user.LastName!
-                </Heading>
+    <Authorized>
+        @if (TaskState != null && _user != null)
+        {
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <Heading Size="HeadingSize.Is2">
+                            Welcome @_user.FirstName @_user.LastName!
+                        </Heading>
+                        <ProjectManager.Components.QuoteSummary />
+                    </div>
+                    @if (Flags.TasksEnabled)
+                    {
+                        <div class="col-md-6">
+                            <Accordion Class="accordion-flush">
+                                <ProjectManager.Components.TaskGroupView Name="Today" Tasks="TaskState.DailyUserTasks" Expanded="true" AllowNew="false" MultipleProjects="true" />
+                                <ProjectManager.Components.TaskGroupView Name="Later This Week" Tasks="TaskState.WeeklyUserTasks" Expanded="true" AllowNew="false" MultipleProjects="true" />
+                                <ProjectManager.Components.TaskGroupView Name="After This Week" Tasks="TaskState.OtherUserTasks" Expanded="true" AllowNew="false" MultipleProjects="true" />
+                            </Accordion>
+                        </div>
+                    }
+                </div>
             </div>
-            <div class="col-md-6">
-                <Accordion Class="accordion-flush">
-                    <ProjectManager.Components.TaskGroupView Name="Today" Tasks="TaskState.DailyUserTasks" Expanded="true" AllowNew="false" MultipleProjects="true" />
-                    <ProjectManager.Components.TaskGroupView Name="Later This Week" Tasks="TaskState.WeeklyUserTasks" Expanded="true" AllowNew="false" MultipleProjects="true" />
-                    <ProjectManager.Components.TaskGroupView Name="After This Week" Tasks="TaskState.OtherUserTasks" Expanded="true" AllowNew="false" MultipleProjects="true" />
-                </Accordion>
-            </div>
-        </div>
-    </div>
-}
-else
-{
-    <p>Task state failure</p>
-}
-</Authorized>
-<NotAuthorized>
-      <Heading Size="HeadingSize.Is2">
-                    Welcome!
-                </Heading>
-</NotAuthorized>
+        }
+        else
+        {
+            <p>Task state failure</p>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <Heading Size="HeadingSize.Is2">
+            Welcome!
+        </Heading>
+    </NotAuthorized>
 </AuthorizeView>
 
 @code {
@@ -49,13 +52,8 @@ else
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
-    string ProjectSelected
-    {
-        get { return _projectSelected; }
-        set { _projectSelected = value; ProjectSelection(); }
-    }
-
-    string _projectSelected = "";
+    [CascadingParameter]
+    public FeatureFlags Flags { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,35 +67,5 @@ else
             _user = await TaskState.GetUserAsync();
         }
         await base.OnInitializedAsync();
-    }
-
-    private async Task IgnoreAll()
-    {
-        if (TaskState == null)
-            throw new InvalidOperationException("Task state null");
-
-        foreach (ProjectResponse projectResponse in TaskState.UnassignedProjects)
-        {
-            await TaskState.IgnoreProject(projectResponse, false);
-        }
-        await TaskState.SyncProjects();
-        StateHasChanged();
-
-    }
-
-    private void ProjectSelection()
-    {
-        if (TaskState == null)
-            throw new InvalidOperationException("Task state null");
-
-        if (!String.IsNullOrEmpty(ProjectSelected))
-        {
-            var proj = TaskState.ProjectStates.FirstOrDefault(ps => ps.Id.ToString() == ProjectSelected);
-            if (proj != null)
-            {
-                TaskState.SelectedProject = proj.Project;
-                StateHasChanged();
-            }
-        }
     }
 }

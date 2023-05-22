@@ -1,22 +1,164 @@
 ﻿@using Blazorise
 @using Blazorise.Components
 @using ProjectManager.Data
+@using ProjectManager.Data.ProjectIntegration
+@using ProjectManager.Data.Native
+@using CommonDataModels
+@using Microsoft.EntityFrameworkCore
+@using ProjectManagerContext.Data
+@inject NativeFiles _nativeFiles;
+@inject ProjectService _projectService
+@inject IModalService _modalService
+@inject ApplicationDbContext _context
 
-@if (TaskState != null && TaskState.SelectedProject != null)
+@if (_projectDetails != null)
 {
-    <Heading Size="HeadingSize.Is2">@TaskState.SelectedProject.ProjectId - @TaskState.SelectedProject.Name</Heading>
-    <Accordion Class="accordion-flush">
-    
-    <TaskGroupView Name="General Tasks" Tasks="@TaskState.SelectedProject.Tasks" Expanded="true"></TaskGroupView>
+    <Container Fluid>
+        <Row>
+            <Column ColumnSize="ColumnSize.Is9">
+                <Heading Size="HeadingSize.Is2">@TaskState.SelectedProject.ProjectId - @TaskState.SelectedProject.Name</Heading>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is3">
+                Users
+            </Column>
+        </Row>
+    </Container>
 
-    </Accordion>    
+    <Buttons Role="ButtonsRole.Toolbar">
+        <Buttons>
+            <Button Color="Color.Primary" Type="ButtonType.Link" To="@deltekLink" Target="Target.Blank">Open Deltek</Button>
+            @if (folder != null)
+            {
+                <Button Color="Color.Primary" Clicked="() => folder.OpenFolder()">Open Folder</Button>
+            }
+            <Button Color="Color.Primary" Clicked="ShowRegister">Document Register</Button>
+        </Buttons>
+    </Buttons>
+
+    <Heading Size="HeadingSize.Is4">Workstages</Heading>
+
+    <CardDeck Class="row-cols-md-5">
+        @foreach (ProjectWorkstage workstage in _projectDetails.Workstages)
+        {
+            <ProjectWorkstageCard Workstage="workstage" />
+        }
+        </CardDeck>
+
+    <Heading Size="HeadingSize.Is4">Variations</Heading>
+    <Button Color="Color.Primary" Clicked="NewVariation">Add Variation</Button>
+    @if (_projectVariations.Any())
+    {
+        <Table Striped>
+            <TableHeader>
+                <TableRow>
+                    <TableRowCell>Reference</TableRowCell>
+                    <TableRowCell>Approved</TableRowCell>
+                    <TableRowCell>Value</TableRowCell>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                @foreach (Variation v in _projectVariations)
+                {
+                    <TableRow>
+                        <TableRowHeader>
+                            @v.Reference
+                        </TableRowHeader>
+                        <TableRowCell>
+                            @{
+                                if (v.Accepted != null)
+                                {
+                                    @("✅")
+                                }
+                                else
+                                {
+                                    @("X")
+                                }
+                            }
+                        </TableRowCell>
+                        <TableRowCell>@v.Charge</TableRowCell>
+
+                    </TableRow>
+                }
+            </TableBody>
+        </Table>
+    }
+
+
+
+    @if (Flags.TasksEnabled)
+    {
+        <Accordion Class="accordion-flush">
+            <TaskGroupView Name="General Tasks" Tasks="@TaskState.SelectedProject.Tasks" Expanded="true"></TaskGroupView>
+        </Accordion>
+    }
+
+
+}
+else
+{
+    if (TaskState != null && TaskState.SelectedProject != null)
+    {
+        <Progress Value="100" Animated Striped />
+    }
 }
 
 @code {
     [CascadingParameter]
     public TaskStateMachine? TaskState { get; set; }
 
+    [CascadingParameter]
+    public FeatureFlags Flags { get; set; }
     
+    private ProjectFolder? folder;
 
-    
+    private ProjectDetails? _projectDetails;
+
+    private IEnumerable<Variation> _projectVariations;
+
+    string deltekLink
+    {
+        get { return $"https://deltekpim.jppuk.net/XWeb/entity/entity.aspx?ec=3&code={_projectDetails.DeltekId}"; }
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        if (TaskState != null && TaskState.SelectedProject != null)
+        {
+            _projectDetails = null;
+            StateHasChanged();
+
+            Task<ProjectFolder> folderTask = null;
+            Task<ProjectDetails> detailTask = null;
+            Task<List<Variation>> variationTask = null;
+
+            if (await _nativeFiles.Available())
+            {
+                folderTask = _nativeFiles.GetProjectFolder(TaskState.SelectedProject.ProjectId);
+            }
+
+            detailTask = _projectService.GetProjectDetails(TaskState.SelectedProject.ProjectId);
+            variationTask = _context.Variations.Where(v => v.Project.ProjectId == TaskState.SelectedProject.ProjectId).ToListAsync(); ;
+
+            //TODO: Improve this section with a wait all
+            if (folderTask != null)
+            {
+                folder = await folderTask;
+            }
+            _projectDetails = await detailTask;
+            _projectVariations = await variationTask;
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private void ShowRegister()
+    {
+        _modalService.Show<DocumentRegisterView>("Document Register", parameters => parameters.Add(x => x.Project, TaskState.SelectedProject));
+    }
+
+    private async void NewVariation()
+    {
+        await _modalService.Show<NewVariationView>("New Variation", parameters => parameters.Add(x => x.Project, TaskState.SelectedProject), new ModalInstanceOptions() { UseModalStructure = false });
+        StateHasChanged();
+    }
 }

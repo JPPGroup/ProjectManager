@@ -40,6 +40,31 @@
                 </div>
                 </div>
                 <div class="flex-grow-1">
+                    @if (incomingInvoices.Count > 0)
+                    {
+                        <Heading Size="HeadingSize.Is4">
+                            Disbursements
+                        </Heading>
+                        <div style="max-height: 15vh; font-size: 0.8em; overflow-y: auto; overflow-x: hidden;">
+                            @foreach (PurchaseOrderLineInvoice i in incomingInvoices)
+                            {                                
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            @i.ProjectCode
+                                        </div>
+                                        <div class="col-md-7">
+                                            @i.ProjectName
+                                        </div>
+                                        <div class="col-md-2" style="text-align: right;">
+                                            @string.Format("{0:C}", i.Value)
+                                        </div>
+                                    </div>
+                                
+                            }
+                        </div>
+                    }
+                </div>
+                <div class="flex-grow-1">
                 @if (UnapprovedInvoiceTotal > 0)
                 {
                     <Heading Size="HeadingSize.Is4">
@@ -81,9 +106,11 @@
     public string Company { get; set; }
 
     private List<Invoice> invoices { get; set; }
+    private List<PurchaseOrderLineInvoice> incomingInvoices { get; set; }
 
     private decimal InvoiceTotal;
     private decimal UnapprovedInvoiceTotal;
+    private decimal DisbursementTotal;
 
     BarChart<decimal> chart;
 
@@ -105,8 +132,10 @@
     protected override async Task OnParametersSetAsync()
     {
         invoices = new List<Invoice>();
+        incomingInvoices = new List<PurchaseOrderLineInvoice>();
         InvoiceTotal = 0;
         UnapprovedInvoiceTotal = 0;
+        DisbursementTotal = 0;
 
         await foreach (Invoice i in _projects.GetMonthInvoices(Company, TargetMonth))
         {
@@ -114,12 +143,20 @@
 
             if(i.Draft)
             {
-                UnapprovedInvoiceTotal += i.GrossValue.Value;
+                UnapprovedInvoiceTotal += i.NettValue.Value;
             } else
             {
-                InvoiceTotal += i.GrossValue.Value;
+                InvoiceTotal += i.NettValue.Value;
             }
 
+            StateHasChanged();
+        }
+
+        await foreach (PurchaseOrderLineInvoice i in _projects.GetIncomingMonthInvoices(Company, TargetMonth))
+        {
+            incomingInvoices.Add(i);
+
+            DisbursementTotal += i.Value.Value;
             StateHasChanged();
         }
 
@@ -144,17 +181,24 @@
         var invoiced = new BarChartDataset<decimal>
             {
                 Label = "Invoiced",
-                Data = new decimal[] { InvoiceTotal }.ToList(),
-                BackgroundColor = new List<string> { ChartColor.FromHtmlColorCode("#ff0000") }
-                
-    };
+                Data = new decimal[] { Math.Max(InvoiceTotal - DisbursementTotal, 0) }.ToList(),
+                BackgroundColor = new List<string> { ChartColor.FromHtmlColorCode("#33cc33") }
+
+            };
         var approval  = new BarChartDataset<decimal>
         {
             Label = "Awaiting Approval",
             Data = new decimal[] {UnapprovedInvoiceTotal }.ToList(),
-            BackgroundColor = new List<string> { ChartColor.FromHtmlColorCode("#F08080") }
-        };      
+                BackgroundColor = new List<string> { ChartColor.FromHtmlColorCode("#adebad") }
+            };
 
-        await chart.AddLabelsDatasetsAndUpdate( labels, invoiced, approval );        
+        var disbursement = new BarChartDataset<decimal>
+            {
+                Label = "Disbursement",
+                Data = new decimal[] { DisbursementTotal }.ToList(),
+                BackgroundColor = new List<string> { ChartColor.FromHtmlColorCode("#ff3333") }
+            };
+
+        await chart.AddLabelsDatasetsAndUpdate( labels, invoiced, approval, disbursement );        
     }
 }

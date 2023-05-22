@@ -54,7 +54,10 @@
             {
                 Project = TaskState.SelectedProject,
                 Due = DateTime.Now,
-                CreatedUser = await TaskState.GetUserAsync()
+                CreatedUser = await TaskState.GetUserAsync(),
+                Name = "New Task",
+                Description = ""
+
             };
 
         TaskState.SelectedTask = task;

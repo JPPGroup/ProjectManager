@@ -17,10 +17,25 @@ namespace ProjectManager.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.7")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("ContactDrawingIssue", b =>
+                {
+                    b.Property<Guid>("ContactsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IssuesId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ContactsId", "IssuesId");
+
+                    b.HasIndex("IssuesId");
+
+                    b.ToTable("ContactDrawingIssue");
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -249,6 +264,41 @@ namespace ProjectManager.Migrations
                     b.ToTable("ProjectTasks");
                 });
 
+            modelBuilder.Entity("ProjectManager.Data.Quote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Issued")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IssuerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("Responded")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("TotalFee")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<bool>("Won")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IssuerId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Quotes");
+                });
+
             modelBuilder.Entity("ProjectManager.Data.UserProfile", b =>
                 {
                     b.Property<string>("Id")
@@ -260,6 +310,9 @@ namespace ProjectManager.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
+
+                    b.Property<bool>("CreationEnabled")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -277,6 +330,9 @@ namespace ProjectManager.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<string>("LineManagerId")
+                        .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -304,6 +360,9 @@ namespace ProjectManager.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
+                    b.Property<bool>("TasksEnabled")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
@@ -313,6 +372,8 @@ namespace ProjectManager.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LineManagerId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -321,6 +382,159 @@ namespace ProjectManager.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.Contact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Company")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contact");
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("DrawingIssues");
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssueEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DrawingIssueId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Revision")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DrawingIssueId");
+
+                    b.ToTable("DrawingIssueEntry");
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.Variation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("Accepted")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("AcceptorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Charge")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DateIssued")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Delay")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("OriginatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RaisedById")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("VariationText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcceptorId");
+
+                    b.HasIndex("OriginatorId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("RaisedById");
+
+                    b.ToTable("Variations");
+                });
+
+            modelBuilder.Entity("ContactDrawingIssue", b =>
+                {
+                    b.HasOne("ProjectManagerContext.Data.Contact", null)
+                        .WithMany()
+                        .HasForeignKey("ContactsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectManagerContext.Data.DrawingIssue", null)
+                        .WithMany()
+                        .HasForeignKey("IssuesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -418,11 +632,113 @@ namespace ProjectManager.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("ProjectManager.Data.Quote", b =>
+                {
+                    b.HasOne("ProjectManager.Data.UserProfile", "Issuer")
+                        .WithMany()
+                        .HasForeignKey("IssuerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectManager.Data.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Issuer");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("ProjectManager.Data.UserProfile", b =>
+                {
+                    b.HasOne("ProjectManager.Data.UserProfile", "LineManager")
+                        .WithMany("Reports")
+                        .HasForeignKey("LineManagerId");
+
+                    b.Navigation("LineManager");
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssue", b =>
+                {
+                    b.HasOne("ProjectManager.Data.Project", "Project")
+                        .WithMany("DrawingIssues")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssueEntry", b =>
+                {
+                    b.HasOne("ProjectManagerContext.Data.DrawingIssue", "Issue")
+                        .WithMany("Entries")
+                        .HasForeignKey("DrawingIssueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Issue");
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.Variation", b =>
+                {
+                    b.HasOne("ProjectManagerContext.Data.Contact", "Acceptor")
+                        .WithMany("VariationsAccepted")
+                        .HasForeignKey("AcceptorId");
+
+                    b.HasOne("ProjectManagerContext.Data.Contact", "Originator")
+                        .WithMany("VariationsIssued")
+                        .HasForeignKey("OriginatorId");
+
+                    b.HasOne("ProjectManager.Data.Project", "Project")
+                        .WithMany("Variations")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectManager.Data.UserProfile", "RaisedBy")
+                        .WithMany("VariationsRaised")
+                        .HasForeignKey("RaisedById");
+
+                    b.Navigation("Acceptor");
+
+                    b.Navigation("Originator");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("RaisedBy");
+                });
+
             modelBuilder.Entity("ProjectManager.Data.Project", b =>
                 {
+                    b.Navigation("DrawingIssues");
+
                     b.Navigation("States");
 
                     b.Navigation("Tasks");
+
+                    b.Navigation("Variations");
+                });
+
+            modelBuilder.Entity("ProjectManager.Data.UserProfile", b =>
+                {
+                    b.Navigation("Reports");
+
+                    b.Navigation("VariationsRaised");
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.Contact", b =>
+                {
+                    b.Navigation("VariationsAccepted");
+
+                    b.Navigation("VariationsIssued");
+                });
+
+            modelBuilder.Entity("ProjectManagerContext.Data.DrawingIssue", b =>
+                {
+                    b.Navigation("Entries");
                 });
 #pragma warning restore 612, 618
         }
