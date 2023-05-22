@@ -1,5 +1,5 @@
 projectmanager:
-  imageVersion: 0.2.0 
+  imageVersion: 0.3.0 
   databaseaddress: "localhost"
   prefix: "/projectmanager"
 
