@@ -68,3 +68,7 @@ a, .btn-link {
         height: 600px;
         width: 600px;
     }
+
+.nav-item {
+    padding: 5px;
+}

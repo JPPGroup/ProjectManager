@@ -19,5 +19,8 @@ namespace ProjectManager.Data
         public virtual IEnumerable<UserProfile> Reports { get; set; }
 
         public virtual ICollection<Variation> VariationsRaised { get; set; }
+
+        public bool TasksEnabled { get; set; } = false;
+        public bool CreationEnabled { get; set; } = false;
     }
 }

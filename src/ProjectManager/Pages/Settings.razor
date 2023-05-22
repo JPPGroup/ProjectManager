@@ -1,0 +1,16 @@
+﻿@page "/settings"
+@using ProjectManager.Data
+@using Blazorise
+@attribute [Authorize]
+
+<h3>Feature Settings</h3>
+
+<Switch TValue="bool" @bind-Checked="@Flags.TasksEnabled">Project Tasks</Switch>
+<Switch TValue="bool" @bind-Checked="@Flags.CreationEnabled">Project Creation</Switch>
+
+@code {
+
+    [CascadingParameter]
+    public FeatureFlags Flags { get; set; }
+
+}

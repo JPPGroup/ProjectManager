@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using ProjectManager.Data.Native;
+﻿using ProjectManager.Data.Native;
 
 namespace ProjectManager.Data
 {
@@ -9,7 +8,25 @@ namespace ProjectManager.Data
 
         public bool NativeOfficeAvailable { get; set; }
 
-        public bool TasksEnabled { get; set; } = false;
+        public bool TasksEnabled
+        {
+            get { return _userProfile.TasksEnabled; }
+            set
+            {
+                _userProfile.TasksEnabled = value;
+                _state.SaveChangesAsync();
+            }
+        }
+
+        public bool CreationEnabled
+        {
+            get { return _userProfile.CreationEnabled; }
+            set
+            {
+                _userProfile.CreationEnabled = value;
+                _state.SaveChangesAsync();
+            }
+        }
 
         public bool NativeFileNotAvailable
         {
@@ -24,10 +41,17 @@ namespace ProjectManager.Data
         }
 
         NativeFiles _nativeFiles { get; set; }
+        TaskStateMachine _state;
 
-        public FeatureFlags(NativeFiles nativeFiles)
+        UserProfile _userProfile;
+
+        public FeatureFlags(NativeFiles nativeFiles, TaskStateMachine state)
         {
             _nativeFiles = nativeFiles;
+            _state = state;
+
+            _userProfile = _state.GetUser();
+
         }
 
         public async Task ScanNative()

@@ -74,7 +74,7 @@ namespace ProjectManager.Data
             }
         }
 
-        public UserProfile GetUser(bool nocache = false)
+        public UserProfile? GetUser(bool nocache = false)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace ProjectManager.Data
 
                 string? userName = _contextAccessor?.HttpContext?.User?.Identity?.Name;
                 if (userName == null)
-                    throw new InvalidOperationException("Username not found");
+                    return null;
 
                 return _context.Users.First(u => u.UserName == userName);
             }

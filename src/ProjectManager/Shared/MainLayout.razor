@@ -39,17 +39,18 @@
                                     <BarLink To="workplan">Workplan</BarLink>
                                 </BarItem>
                             }
-                            <BarItem>
-                                <BarDropdown>
-                                    <BarDropdownToggle>New</BarDropdownToggle>
-                                    <BarDropdownMenu>                                
-                                        <BarDropdownItem To="new/project">Project</BarDropdownItem>
-                                        <BarDropdownItem To="new/quote">Quote</BarDropdownItem>
-                                    
-                                                                
-                                    </BarDropdownMenu>
-                                </BarDropdown>
-                            </BarItem>
+                            @if (Flags.CreationEnabled)
+                            {
+                                <BarItem>
+                                    <BarDropdown>
+                                        <BarDropdownToggle>New</BarDropdownToggle>
+                                        <BarDropdownMenu>
+                                            <BarDropdownItem To="new/project">Project</BarDropdownItem>
+                                            <BarDropdownItem To="new/quote">Quote</BarDropdownItem>
+                                        </BarDropdownMenu>
+                                    </BarDropdown>
+                                </BarItem>
+                            }
                         </Authorized>
                     </AuthorizeView>
 
@@ -70,9 +71,9 @@
                             </BarDropdownMenu>
                         </BarDropdown>
                     </BarItem>
-                    <BarItem>
+                    <!--<BarItem>
                         <Switch TValue="bool" @bind-Checked="@showReports">Show Reports</Switch>
-                    </BarItem>
+                    </BarItem>-->
                 </BarStart>
                 <BarEnd>
                     <BarItem>
@@ -90,7 +91,7 @@
                 <CascadingValue Value="@showReports">
                     <Alert Color="Color.Success" @bind-Visible="@Flags.NativeFileNotAvailable">
                             <AlertDescription>
-                                For full functionality please install the native version available here
+                            For full functionality please install the desktop version available <a href="https://jppcdnstorage.blob.core.windows.net/jpppm/index.html">here</a>
                             </AlertDescription>
                             <CloseButton/>
                         </Alert>
