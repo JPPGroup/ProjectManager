@@ -1,9 +1,9 @@
 ﻿@using Blazorise
 @using Blazorise.Components
 @using ProjectManager.Data
-@using ProjectManager.Data.ProjectIntegration
 @using ProjectManager.Data.Native
 @using CommonDataModels
+@using CommonDataServices
 @using Microsoft.EntityFrameworkCore
 @using ProjectManagerContext.Data
 @inject NativeFiles _nativeFiles;
@@ -32,6 +32,7 @@
                 <Button Color="Color.Primary" Clicked="() => folder.OpenFolder()">Open Folder</Button>
             }
             <Button Color="Color.Primary" Clicked="ShowRegister">Document Register</Button>
+            <Button Color="Color.Danger" Clicked="CloseProject">Close Project</Button>
         </Buttons>
     </Buttons>
 
@@ -83,16 +84,12 @@
         </Table>
     }
 
-
-
     @if (Flags.TasksEnabled)
     {
         <Accordion Class="accordion-flush">
             <TaskGroupView Name="General Tasks" Tasks="@TaskState.SelectedProject.Tasks" Expanded="true"></TaskGroupView>
         </Accordion>
     }
-
-
 }
 else
 {
@@ -122,11 +119,11 @@ else
 
     protected async override Task OnParametersSetAsync()
     {
+        _projectDetails = null;
+        StateHasChanged();
+
         if (TaskState != null && TaskState.SelectedProject != null)
         {
-            _projectDetails = null;
-            StateHasChanged();
-
             Task<ProjectFolder> folderTask = null;
             Task<ProjectDetails> detailTask = null;
             Task<List<Variation>> variationTask = null;
@@ -160,5 +157,10 @@ else
     {
         await _modalService.Show<NewVariationView>("New Variation", parameters => parameters.Add(x => x.Project, TaskState.SelectedProject), new ModalInstanceOptions() { UseModalStructure = false });
         StateHasChanged();
+    }
+
+    private async void CloseProject()
+    {
+        await TaskState.CompleteProject(TaskState.SelectedProject);
     }
 }

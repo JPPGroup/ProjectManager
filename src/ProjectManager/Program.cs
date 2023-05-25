@@ -2,13 +2,13 @@ using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using Blazorise.RichTextEdit;
+using CommonDataServices;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Areas.Identity;
 using ProjectManager.Data;
 using ProjectManager.Data.Native;
-using ProjectManager.Data.ProjectIntegration;
 using Serilog;
 
 namespace Company.WebApplication1
@@ -24,6 +24,7 @@ namespace Company.WebApplication1
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
 #if DEBUG
+                //options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
                 options.UseSqlServer(connectionString, x => x.MigrationsAssembly("ProjectManager"));
 #else
                 options.UseNpgsql(connectionString, x => x.MigrationsAssembly("PostgresqlMigrations"));                                                

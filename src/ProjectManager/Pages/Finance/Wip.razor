@@ -3,7 +3,7 @@
 @using ProjectManager.Data
 @using CommonDataModels
 @using System.Collections.Concurrent
-@using ProjectManager.Data.ProjectIntegration
+@using CommonDataServices
 @using ProjectManager.Components
 @inject ProjectService _projects
 @inject ILogger<Wip> _logger
@@ -83,7 +83,7 @@
             totalCount = TaskState.ProjectStates.Count();
             await Parallel.ForEachAsync(TaskState.ProjectStates, async (p, token) =>
             {
-                if (p.State != State.Ignored)
+                if (p.State == State.Active)
                 {
                     ProjectDetails? pd = await _projects.GetProjectDetails(p.Project.ProjectId);
 

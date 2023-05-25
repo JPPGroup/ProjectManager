@@ -1,8 +1,8 @@
 ﻿@page "/projects"
 @using Blazorise
-@using Blazorise.Components
+@using CommonDataModels
+@using CommonDataServices
 @using ProjectManager.Data
-@using ProjectManager.Data.ProjectIntegration
 @attribute [Authorize]
 @inject ProjectService _projects
 
@@ -25,7 +25,7 @@
                             <Button Color="Color.Primary" Clicked="async () => await IgnoreAll()">Ignore All</Button>
                         </Buttons>
                     </Buttons>
-                    <ListGroup Class="list-group-flush" Style="min-height:350px;max-height: 350px;overflow: auto">
+                    <ListGroup Class="list-group-flush" Style="min-height:300px;max-height: 300px;overflow: auto">
                         @foreach (ProjectResponse pr in TaskState.UnassignedProjects)
                         {
                             <ListGroupItem>
@@ -47,7 +47,12 @@
                     My Projects
                     <Badge Color="Color.Secondary" Pill Style="font-size:.5em;">@TaskState.ProjectStates.Count()</Badge>
                 </Heading>
-                <ListGroup Class="list-group-flush" Style="min-height:350px;max-height: 350px;overflow: auto" Mode="ListGroupMode.Selectable" @bind-SelectedItem="ProjectSelected">
+                <Buttons Role="ButtonsRole.Toolbar">
+                    <Buttons>
+                        <Button Color="Color.Primary" Clicked="async () => await RemoveCompleted()">Remove Complete</Button>
+                    </Buttons>
+                </Buttons>
+                <ListGroup Class="list-group-flush" Style="min-height:300px;max-height: 300px;overflow: auto" Mode="ListGroupMode.Selectable" @bind-SelectedItem="ProjectSelected">
                     @foreach (ProjectStates ps in TaskState.ProjectStates)
                     {
                         <ListGroupItem Name="@ps.Id.ToString()">@ps.Project.ProjectId - @ps.Project.Name</ListGroupItem>
@@ -114,6 +119,19 @@ else
         await TaskState.SyncProjects();
         StateHasChanged();
 
+    }
+
+    private async Task RemoveCompleted()
+    {
+        if (TaskState == null)
+            throw new InvalidOperationException("Task state null");
+
+        foreach (ProjectResponse projectResponse in TaskState.CompletedProjects)
+        {
+            await TaskState.CompleteProject(projectResponse, false);
+        }
+        await TaskState.SyncProjects();
+        StateHasChanged();
     }
 
     private void ProjectSelection()

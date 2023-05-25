@@ -33,7 +33,7 @@
     <ProjectReference Include="..\PostgresqlMigrations\PostgresqlMigrations.csproj" />
     <ProjectReference Include="..\ProjectDocuments\ProjectDocuments.csproj" />
     <ProjectReference Include="..\ProjectManagerContext\ProjectManagerContext.csproj" />
-    <ProjectReference Include="..\submodules\ServicesClient\src\CommonDataModels\CommonDataModels.csproj" />
+    <ProjectReference Include="..\submodules\ServicesClient\src\CommonDataServices\CommonDataServices.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommonDataModels;
+using CommonDataServices;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.EntityFrameworkCore;
-using ProjectManager.Data.ProjectIntegration;
 
 namespace ProjectManager.Data
 {
@@ -14,7 +15,8 @@ namespace ProjectManager.Data
         UserProfile? _user;
         readonly SemaphoreSlim _userLock = new(1);
 
-        public IEnumerable<ProjectResponse> UnassignedProjects { get; set; }
+        public IEnumerable<ProjectResponse> UnassignedProjects => _unassignedProjects;
+        public IEnumerable<ProjectResponse> CompletedProjects => _completedProjects;
         public IEnumerable<ProjectStates> ProjectStates { get; set; }
 
         public IEnumerable<ProjectTask> UserTasks { get { return _userTasks; } }
@@ -33,16 +35,19 @@ namespace ProjectManager.Data
         [ObservableProperty]
         ProjectTask? _selectedTask;
 
-        public TaskStateMachine(ProjectService projectService, ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
-        {
-            /*string userName = httpContextAccessor.HttpContext.User.Identity.Name;
-            User = context.Users.First(u => u.Id == userName);*/
+        private List<ProjectResponse> _unassignedProjects;
+        private List<ProjectResponse> _completedProjects;
 
+        private ILogger<TaskStateMachine> _logger;
+
+        public TaskStateMachine(ProjectService projectService, ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, ILogger<TaskStateMachine> logger)
+        {
             _projectService = projectService;
             _context = context;
             _contextAccessor = httpContextAccessor;
+            _logger = logger;
 
-            UnassignedProjects = new List<ProjectResponse>();
+            _unassignedProjects = new List<ProjectResponse>();
             ProjectStates = new List<ProjectStates>();
             _userTasks = new List<ProjectTask>();
 
@@ -100,15 +105,41 @@ namespace ProjectManager.Data
 
             _user ??= await GetUserAsync();
 
-            var results = await _projectService.GetProjects(_user.FirstName, _user.LastName);
             //Is this efficient?
             //TODO: Review exectuion
+            //TODO: This warns of query splitting for EF
             var allStates = await _context.ProjectStates.Where(ps => ps.UserId == _user.Id).ToListAsync();
             ProjectStates = allStates.Where(ps => ps.State == State.Active);
+
+            _unassignedProjects = new List<ProjectResponse>();
+            _completedProjects = new List<ProjectResponse>();
+
+            await foreach (ProjectResponse pr in _projectService.GetProjectsAsync(_user.FirstName, _user.LastName))
+            {
+                var state = allStates.FirstOrDefault<ProjectStates>(ps => ps.Project.ProjectId == pr.Code);
+
+                if (state == null && (pr.Status == ProjectStatus.Enquiry || pr.Status == ProjectStatus.Live))
+                {
+                    _unassignedProjects.Add(pr);
+                    continue;
+                }
+
+                if (state != null && state.State == State.Unknown)
+                {
+                    _unassignedProjects.Add(pr);
+                    continue;
+                }
+
+                if (pr.Status == ProjectStatus.Completed || pr.Status == ProjectStatus.Abandoned)
+                {
+
+                    if (state != null && state.State == State.Active)
+                        _completedProjects.Add(pr);
+                }
+            }
+
             await GenerateTaskList();
             //var unmatchedProjects = await _context.ProjectStates.Where(p => results.All(r => r.Code != p.Project.ProjectId)).ToListAsync();
-
-            UnassignedProjects = results.Where(r => ProjectStates.All(ps => r.Code != ps.Project.ProjectId || ps.State == State.Unknown)).ToList();
 
             UserQuotes = _context.Quotes.Where(q => q.IssuerId == _user.Id);
             foreach (Quote quote in UserQuotes)
@@ -204,6 +235,30 @@ namespace ProjectManager.Data
         public void DiscardChanges()
         {
 
+        }
+
+        public async Task CompleteProject(ProjectResponse response, bool sync = true)
+        {
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == response.Code) ?? createNewProject(response);
+            await CompleteProject(project, sync);
+        }
+
+        public async Task CompleteProject(Project project, bool sync = true)
+        {
+            _user ??= await GetUserAsync();
+
+            var state = project.States.FirstOrDefault(ps => ps.UserId == _user.Id) ?? createState(project);
+
+            state.State = State.Archived;
+            if (sync)
+            {
+                await _context.SaveChangesAsync();
+                await SyncProjects();
+            }
+
+            //TODO: Tweak this to use obersvable properly
+            if (SelectedProject.ProjectId == project.ProjectId)
+                SelectedProject = null;
         }
     }
 }
